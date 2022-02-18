@@ -3,13 +3,16 @@ package yesql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
+	"github.com/izolate/yesql/bindvar"
 	"github.com/izolate/yesql/template"
 )
 
 type DB struct {
-	DB  *sql.DB
-	tpl template.Execer
+	DB   *sql.DB
+	tpl  template.Execer
+	bvar bindvar.Parser
 }
 
 // Open opens a database specified by its database driver name and a
@@ -30,20 +33,24 @@ func Open(driver, dsn string) (*DB, error) {
 		return nil, err
 	}
 	return &DB{
-		DB:  db,
-		tpl: template.New(),
+		DB:   db,
+		tpl:  template.New(),
+		bvar: bindvar.New(),
 	}, nil
 }
 
 // ExecContext executes a query without returning any rows.
 // The data object is a struct for any placeholder parameters in the query.
 func (db *DB) ExecContext(ctx context.Context, query string, data interface{}) (sql.Result, error) {
-	q, err := db.tpl.Exec(query, data)
+	qt, err := db.tpl.Exec(query, data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	args := []interface{}{}
-	return db.DB.ExecContext(ctx, q, args)
+	q, args, err := db.bvar.Parse(qt, data)
+	if err != nil {
+		return nil, fmt.Errorf("yesql: %s", err)
+	}
+	return db.DB.ExecContext(ctx, q, args...)
 }
 
 // Exec executes a query without returning any rows.
@@ -55,12 +62,15 @@ func (db *DB) Exec(query string, data interface{}) (sql.Result, error) {
 // QueryContext executes a query that returns rows, typically a SELECT.
 // The data object is a struct for any placeholder parameters in the query.
 func (db *DB) QueryContext(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
-	q, err := db.tpl.Exec(query, data)
+	qt, err := db.tpl.Exec(query, data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	args := []interface{}{}
-	return db.DB.QueryContext(ctx, q, args)
+	q, args, err := db.bvar.Parse(qt, data)
+	if err != nil {
+		return nil, fmt.Errorf("yesql: %s", err)
+	}
+	return db.DB.QueryContext(ctx, q, args...)
 }
 
 // Query executes a query that returns rows, typically a SELECT.
