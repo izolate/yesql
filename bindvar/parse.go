@@ -1,6 +1,7 @@
 package bindvar
 
 import (
+	"database/sql/driver"
 	"fmt"
 )
 
@@ -17,11 +18,13 @@ type Parser interface {
 	Parse(query string, data interface{}) (q string, args []interface{}, err error)
 }
 
-func New() Parser {
-	return &parser{}
+func New(driver string) Parser {
+	return &parser{driver}
 }
 
-type parser struct{}
+type parser struct {
+	driver string
+}
 
 func (parser) Parse(query string, data interface{}) (string, []interface{}, error) {
 	// Convert to rune to handle unicode strings
@@ -73,13 +76,17 @@ func parse(query []rune) (s []rune, args [][]int) {
 			a1 := a + 1 // Ignore prefix (@) in arg name.
 			args = append(args, []int{a1, b})
 
-			// Add the positional placeholder to the output query
+			// Convert the named arg to the correct arg for the driver.
 			// TODO: support more sql engines than postgres
 			ac++ // increment arg counter
-			p := []rune(fmt.Sprintf("$%d", ac))
-			s = append(s, p...)
+			nv := driver.NamedValue{
+				Ordinal: ac,
+				Name:    string(query[a1:b]),
+			}
+			arg := []rune(formatArg("postgres", nv))
+			s = append(s, arg...)
 
-			// Skip to the end of arg
+			// Skip to the end of arg.
 			a = b
 			continue
 		}
@@ -89,4 +96,13 @@ func parse(query []rune) (s []rune, args [][]int) {
 	}
 	fmt.Println(string(s))
 	return s, args
+}
+
+func formatArg(driver string, nv driver.NamedValue) string {
+	switch driver {
+	case "postgres":
+		return fmt.Sprintf("$%d", nv.Ordinal)
+	default:
+		return "?"
+	}
 }

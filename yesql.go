@@ -35,7 +35,7 @@ func Open(driver, dsn string) (*DB, error) {
 	return &DB{
 		DB:   db,
 		tpl:  template.New(),
-		bvar: bindvar.New(),
+		bvar: bindvar.New(driver),
 	}, nil
 }
 

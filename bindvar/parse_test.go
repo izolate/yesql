@@ -7,13 +7,15 @@ import (
 
 func TestParse(t *testing.T) {
 	tcs := []struct {
-		qt   string        // query template
-		data interface{}   // data object for args
-		q    string        // returned query
-		args []interface{} // positional arg values
+		driver string        // DB driver
+		qt     string        // query template
+		data   interface{}   // data object for args
+		q      string        // returned query
+		args   []interface{} // positional arg values
 	}{
 		{
-			qt: "SELECT * FROM a WHERE name = @Name AND age > @Age LIMIT 5",
+			driver: "postgres",
+			qt:     "SELECT * FROM a WHERE name = @Name AND age > @Age LIMIT 5",
 			data: struct {
 				Name string
 				Age  int
@@ -22,7 +24,8 @@ func TestParse(t *testing.T) {
 			args: []interface{}{"Foo", 10},
 		},
 		{
-			qt: "SELECT * FROM users WHERE name = @Name AND username LIKE '@foo%' LIMIT @Limit OFFSET 5",
+			driver: "postgres",
+			qt:     "SELECT * FROM users WHERE name = @Name AND username LIKE '@foo%' LIMIT @Limit OFFSET 5",
 			data: struct {
 				Name  string
 				Limit int
@@ -31,7 +34,8 @@ func TestParse(t *testing.T) {
 			args: []interface{}{"Foo", 100},
 		},
 		{
-			qt: `SELECT * FROM docs WHERE type = @Type AND dump = '{"text":"''@ignore @at @signs@@@''"}' LIMIT @Limit`,
+			driver: "postgres",
+			qt:     `SELECT * FROM docs WHERE type = @Type AND dump = '{"text":"''@ignore @at @signs@@@''"}' LIMIT @Limit`,
 			data: struct {
 				Type  string
 				Limit int
@@ -40,7 +44,8 @@ func TestParse(t *testing.T) {
 			args: []interface{}{"Foo", 100},
 		},
 		{
-			qt: "SELECT * FROM strings WHERE locale = @Locale AND text ILIKE @很好 LIMIT @Limit",
+			driver: "postgres",
+			qt:     "SELECT * FROM strings WHERE locale = @Locale AND text ILIKE @很好 LIMIT @Limit",
 			data: struct {
 				Locale string
 				很好     string
@@ -50,7 +55,8 @@ func TestParse(t *testing.T) {
 			args: []interface{}{"Foo", "很好", 3},
 		},
 		{
-			qt: "SELECT created_at::timestamp(0) WHERE created_at > @Date",
+			driver: "postgres",
+			qt:     "SELECT created_at::timestamp(0) WHERE created_at > @Date",
 			data: struct {
 				Date time.Time
 			}{Date: time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
@@ -58,8 +64,8 @@ func TestParse(t *testing.T) {
 			args: []interface{}{time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
 		},
 	}
-	bvar := New()
 	for _, tc := range tcs {
+		bvar := New(tc.driver)
 		q, _, err := bvar.Parse(tc.qt, tc.data)
 		if err != nil {
 			t.Fatalf(err.Error())
