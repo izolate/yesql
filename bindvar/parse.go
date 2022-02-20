@@ -30,25 +30,22 @@ func (parser) Parse(query string, data interface{}) (string, []interface{}, erro
 	// Convert to rune to handle unicode strings
 	qt := []rune(query)
 
-	//
-	q, argn := parse(qt)
-	for _, a := range argn {
-		s := qt[a[0]:a[1]]
-		fmt.Println(string(s))
+	// Parse named args
+	q, nvs := parse(qt)
+	for _, nv := range nvs {
+		fmt.Printf("%d) %v %v\n", nv.Ordinal, nv.Name, nv.Value)
 	}
 
 	return string(q), nil, nil
 }
 
-func parse(query []rune) (s []rune, args [][]int) {
+func parse(query []rune) (s []rune, args []driver.NamedValue) {
 	var (
 		a      int  // Pointer used to seek through the string
-		ac     int  // Total number of captured args
+		op     int  // The ordinal position of the captured arg
 		ignore bool // Used to ignore false positives
 	)
 	for a < len(query) {
-		// fmt.Printf("A:%d\n", a)
-
 		ra := query[a] // the rune at position a
 
 		fmt.Printf("%s\n", string(ra))
@@ -72,29 +69,28 @@ func parse(query []rune) (s []rune, args [][]int) {
 				b++
 			}
 
-			// Collect the placeholder names to later extract values from data.
+			op++ // Increment the arg's ordinal position.
+
+			// Add the named arg to the list of all found args.
 			a1 := a + 1 // Ignore prefix (@) in arg name.
-			args = append(args, []int{a1, b})
+			nv := driver.NamedValue{
+				Ordinal: op,
+				Name:    string(query[a1:b]),
+			}
+			args = append(args, nv)
 
 			// Convert the named arg to the correct arg for the driver.
 			// TODO: support more sql engines than postgres
-			ac++ // increment arg counter
-			nv := driver.NamedValue{
-				Ordinal: ac,
-				Name:    string(query[a1:b]),
-			}
 			arg := []rune(formatArg("postgres", nv))
 			s = append(s, arg...)
 
-			// Skip to the end of arg.
-			a = b
+			a = b // Skip to the end of the arg
 			continue
 		}
 
 		s = append(s, query[a])
 		a++
 	}
-	fmt.Println(string(s))
 	return s, args
 }
 
