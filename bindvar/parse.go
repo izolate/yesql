@@ -4,6 +4,10 @@ import (
 	"fmt"
 )
 
+// Named argument prefix syntax used by the std lib.
+// https://pkg.go.dev/database/sql#Named
+const naPrefix = "@"
+
 type Parser interface {
 	// Parse parses all named parameters in a SQL statement, and returns
 	// a statement with the params converted to bindvars appropriate for
@@ -44,30 +48,14 @@ func parse(query []rune) (s []rune, args [][]int) {
 
 		ra := query[a] // the rune at position a
 
-		// Find the previous and next runes to the current position.
-		// We use these to accurately deduce a named parameter, and omit false positives.
-		var ral, rar rune
-		if a > 0 {
-			ral = query[a-1]
-		}
-		if a < len(query)-1 {
-			rar = query[a+1]
-		}
-		// fmt.Printf("%s %s %s\n", string(ral), string(ra), string(rar))
-
-		/*
-			fmt.Println(
-				string(ral),
-				reInvalidPrev.MatchString(string(ral)),
-			)
-		*/
+		fmt.Printf("%s\n", string(ra))
 
 		// Ignore characters inside sql string literals.
 		if string(ra) == "'" {
 			ignore = !ignore
 		}
 
-		if !ignore && string(ra) == ":" && string(ral) != ":" && string(rar) != ":" {
+		if !ignore && string(ra) == naPrefix {
 			// We've found an argument! Create second pointer to find end of argument.
 			b := a
 
@@ -82,7 +70,7 @@ func parse(query []rune) (s []rune, args [][]int) {
 			}
 
 			// Collect the placeholder names to later extract values from data.
-			a1 := a + 1 // Ignore prefixed colon (:) in arg name.
+			a1 := a + 1 // Ignore prefix (@) in arg name.
 			args = append(args, []int{a1, b})
 
 			// Add the positional placeholder to the output query

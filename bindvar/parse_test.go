@@ -13,7 +13,7 @@ func TestParse(t *testing.T) {
 		args []interface{} // positional arg values
 	}{
 		{
-			qt: "SELECT * FROM a WHERE name = :Name AND age > :Age LIMIT 5",
+			qt: "SELECT * FROM a WHERE name = @Name AND age > @Age LIMIT 5",
 			data: struct {
 				Name string
 				Age  int
@@ -22,25 +22,25 @@ func TestParse(t *testing.T) {
 			args: []interface{}{"Foo", 10},
 		},
 		{
-			qt: "SELECT * FROM urls WHERE title ILIKE :Title AND domain = 'http://example.com' LIMIT :Limit OFFSET 5",
+			qt: "SELECT * FROM users WHERE name = @Name AND username LIKE '@foo%' LIMIT @Limit OFFSET 5",
 			data: struct {
-				Title string
+				Name  string
 				Limit int
-			}{Title: "Foo", Limit: 100},
-			q:    "SELECT * FROM urls WHERE title ILIKE $1 AND domain = 'http://example.com' LIMIT $2 OFFSET 5",
+			}{Name: "Foo", Limit: 100},
+			q:    "SELECT * FROM users WHERE name = $1 AND username LIKE '@foo%' LIMIT $2 OFFSET 5",
 			args: []interface{}{"Foo", 100},
 		},
 		{
-			qt: `SELECT * FROM docs WHERE type = :Type AND dump = '{"text":"''ignore colons:true''"}' LIMIT :Limit`,
+			qt: `SELECT * FROM docs WHERE type = @Type AND dump = '{"text":"''@ignore @at @signs@@@''"}' LIMIT @Limit`,
 			data: struct {
 				Type  string
 				Limit int
 			}{Type: "Foo", Limit: 100},
-			q:    `SELECT * FROM docs WHERE type = $1 AND dump = '{"text":"''ignore colons:true''"}' LIMIT $2`,
+			q:    `SELECT * FROM docs WHERE type = $1 AND dump = '{"text":"''@ignore @at @signs@@@''"}' LIMIT $2`,
 			args: []interface{}{"Foo", 100},
 		},
 		{
-			qt: "SELECT * FROM strings WHERE locale = :Locale AND text ILIKE :很好 LIMIT :Limit",
+			qt: "SELECT * FROM strings WHERE locale = @Locale AND text ILIKE @很好 LIMIT @Limit",
 			data: struct {
 				Locale string
 				很好     string
@@ -50,7 +50,7 @@ func TestParse(t *testing.T) {
 			args: []interface{}{"Foo", "很好", 3},
 		},
 		{
-			qt: "SELECT created_at::timestamp(0) WHERE created_at > :Date",
+			qt: "SELECT created_at::timestamp(0) WHERE created_at > @Date",
 			data: struct {
 				Date time.Time
 			}{Date: time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
