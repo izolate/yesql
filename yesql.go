@@ -83,13 +83,26 @@ func (db *DB) Query(ctx context.Context, query string, data interface{}) (*sql.R
 import yesql
 
 type User struct {
+	ID   string `db:"id"`
 	Name string `db:"name"`
 	Age  int    `db:"age"`
 }
 
-func getUserByName(ctx context.Context, u User) {
+type UserQuery struct {
+	Name string
+	Age  int
+}
+
+func getUserByName(ctx context.Context, q UserQuery) error {
 	db, err := yesql.Open("postgres", "...")
-	stmt := `SELECT * FROM users WHERE name = :name {{if .Age}}AND age = :age{{end}}`
-	rows, err := db.ExecContext(ctx, stmt, u)
+	stmt := `SELECT * FROM users WHERE name = @Name {{if .Age}}AND age = @Age{{end}}`
+	row, err := db.QueryContext(ctx, stmt, q)
+	if err != nil {
+		return err
+	}
+	var u User
+	if err := yesql.Scan(row, &u); err != nil {
+		return err
+	}
 }
 */

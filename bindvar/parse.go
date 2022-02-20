@@ -79,7 +79,7 @@ func parse(query []rune) (s []rune, args []driver.NamedValue) {
 			}
 			args = append(args, nv)
 
-			// Convert the named arg to the correct arg for the driver.
+			// Convert the named arg to the correct syntax for the driver.
 			// TODO: support more sql engines than postgres
 			arg := []rune(formatArg("postgres", nv))
 			s = append(s, arg...)
