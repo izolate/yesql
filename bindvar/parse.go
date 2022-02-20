@@ -1,6 +1,8 @@
 package bindvar
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Parser interface {
 	// Parse parses all named parameters in a SQL statement, and returns
@@ -33,8 +35,9 @@ func (parser) Parse(query string, data interface{}) (string, []interface{}, erro
 
 func parse(query []rune) (s []rune, args [][]int) {
 	var (
-		a  int // Pointer used to seek through the string
-		ac int // Arg counter
+		a      int  // Pointer used to seek through the string
+		ac     int  // Total number of captured args
+		ignore bool // Used to ignore false positives
 	)
 	for a < len(query) {
 		// fmt.Printf("A:%d\n", a)
@@ -50,9 +53,21 @@ func parse(query []rune) (s []rune, args [][]int) {
 		if a < len(query)-1 {
 			rar = query[a+1]
 		}
-		fmt.Printf("%s %s %s\n", string(ral), string(ra), string(rar))
+		// fmt.Printf("%s %s %s\n", string(ral), string(ra), string(rar))
 
-		if string(ra) == ":" && string(ral) != ":" && string(rar) != ":" {
+		/*
+			fmt.Println(
+				string(ral),
+				reInvalidPrev.MatchString(string(ral)),
+			)
+		*/
+
+		// Ignore characters inside sql string literals.
+		if string(ra) == "'" {
+			ignore = !ignore
+		}
+
+		if !ignore && string(ra) == ":" && string(ral) != ":" && string(rar) != ":" {
 			// We've found an argument! Create second pointer to find end of argument.
 			b := a
 
