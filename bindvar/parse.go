@@ -46,7 +46,7 @@ func (p parser) Parse(query string, data interface{}) (string, []interface{}, er
 }
 
 // reArgTerm is the terminating character of a named arg.
-var reArgTerm = regexp.MustCompile(`[[:space:]]|;|\)`)
+var reArgTerm = regexp.MustCompile(`[[:space:]]|;|\)|,`)
 
 // parse parses the named args out of a query and returns a string with
 // the correct arg syntax for the driver, and a list of arg names.
