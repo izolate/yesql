@@ -69,6 +69,33 @@ func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
 }
 ```
 
+In fact, positional scanning is error-prone. Let's scan into a struct instead using `db` struct tags:
+
+```go
+type Book struct {
+    ID     string `db:"id"`
+    Title  string `db:"title"`
+    Author string `db:"author"`
+    Genre  string `db:"genre"`
+}
+
+func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
+    rows, err := db.QueryContext(c, sqlSearchBooks, s)
+    if err != nil {
+        return nil, err
+    }
+    books := []Book{}
+    for rows.Next() {
+        var b Book
+        if err := rows.StructScan(&b); err != nil {
+            return nil, err
+        }
+        books = append(books, b)
+    }
+    return books, nil
+}
+```
+
 ## Feature checklist
 
 - [x] Templated SQL statements
