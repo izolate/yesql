@@ -42,14 +42,14 @@ Use `Query` or `QueryContext` to execute a query to return data. Templates offer
 
 ```go
 type BookSearch struct {
-    Author   string    
-    Category string
+    Author string    
+    Genre  string
 }
 
 const sqlSearchBooks = `
 SELECT * FROM books
 WHERE author = @Author
-{{if .Category}}AND category = @Category{{end}}
+{{if .Genre}}AND genre = @Genre{{end}}
 `
 
 func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
@@ -60,7 +60,7 @@ func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
     books := []Book{}
     for rows.Next() {
         var b Book
-        if err := rows.Scan(&b.ID, &b.Title, &b.Author, &b.Category); err != nil {
+        if err := rows.Scan(&b.ID, &b.Title, &b.Author, &b.Genre); err != nil {
             return nil, err
         }
         books = append(books, b)
