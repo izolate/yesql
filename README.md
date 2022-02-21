@@ -19,7 +19,7 @@ func main() {
 }
 ```
 
-Use `Exec` or `ExecContext` to execute a query without returning data. Named parameters (`@Foo`) allow you to bind arguments to map (or struct) fields:
+Use `Exec` or `ExecContext` to execute a query without returning data. Named parameters (`@Foo`) allow you to bind arguments to map (or struct) fields without the risk of SQLI:
 
 ```go
 type Book struct {
@@ -28,7 +28,7 @@ type Book struct {
     Author string
 }
 
-func InsertUser(c context.Context, b Book) error {
+func InsertBook(c context.Context, b Book) error {
     q := `INSERT INTO users (id, title, author) VALUES (@ID, @Title, @Author)`
     _, err := db.ExecContext(c, q, b)
     if err != nil {
