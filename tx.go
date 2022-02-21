@@ -38,12 +38,12 @@ func (tx *Tx) Exec(query string, data interface{}) (sql.Result, error) {
 
 // QueryContext executes a query that returns rows, typically a SELECT.
 // The data object is a map/struct for any placeholder parameters in the query.
-func (tx *Tx) QueryContext(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
+func (tx *Tx) QueryContext(ctx context.Context, query string, data interface{}) (*Rows, error) {
 	return queryContext(tx.Tx, ctx, query, data, tx.tpl, tx.bvar)
 }
 
 // Query executes a query that returns rows, typically a SELECT.
 // The data object is a map/struct for any placeholder parameters in the query.
-func (tx *Tx) Query(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
+func (tx *Tx) Query(ctx context.Context, query string, data interface{}) (*Rows, error) {
 	return tx.QueryContext(context.Background(), query, data)
 }

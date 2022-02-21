@@ -72,7 +72,7 @@ func queryContext(
 	data interface{},
 	tpl template.Execer,
 	bvar bindvar.Parser,
-) (*sql.Rows, error) {
+) (*Rows, error) {
 	qt, err := tpl.Exec(query, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
@@ -81,33 +81,6 @@ func queryContext(
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	return db.QueryContext(ctx, q, args...)
+	rows, err := db.QueryContext(ctx, q, args...)
+	return &Rows{rows}, err
 }
-
-/*
-import yesql
-
-type User struct {
-	ID   string `db:"id"`
-	Name string `db:"name"`
-	Age  int    `db:"age"`
-}
-
-type UserQuery struct {
-	Name string
-	Age  int
-}
-
-func getUserByName(ctx context.Context, q UserQuery) error {
-	db, err := yesql.Open("postgres", "...")
-	stmt := `SELECT * FROM users WHERE name = @Name {{if .Age}}AND age = @Age{{end}}`
-	row, err := db.QueryContext(ctx, stmt, q)
-	if err != nil {
-		return err
-	}
-	var u User
-	if err := yesql.Scan(row, &u); err != nil {
-		return err
-	}
-}
-*/
