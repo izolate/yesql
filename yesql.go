@@ -9,6 +9,14 @@ import (
 	"github.com/izolate/yesql/template"
 )
 
+type Execer interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+}
+
+type Queryer interface {
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+}
+
 type DB struct {
 	DB   *sql.DB
 	tpl  template.Execer
@@ -40,43 +48,69 @@ func Open(driver, dsn string) (*DB, error) {
 }
 
 // ExecContext executes a query without returning any rows.
-// The data object is a struct for any placeholder parameters in the query.
+// The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) ExecContext(ctx context.Context, query string, data interface{}) (sql.Result, error) {
-	qt, err := db.tpl.Exec(query, data)
-	if err != nil {
-		return nil, fmt.Errorf("yesql: %s", err)
-	}
-	q, args, err := db.bvar.Parse(qt, data)
-	if err != nil {
-		return nil, fmt.Errorf("yesql: %s", err)
-	}
-	return db.DB.ExecContext(ctx, q, args...)
+	return execContext(db.DB, ctx, query, data, db.tpl, db.bvar)
 }
 
 // Exec executes a query without returning any rows.
-// The data object is a struct for any placeholder parameters in the query.
+// The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) Exec(query string, data interface{}) (sql.Result, error) {
 	return db.ExecContext(context.Background(), query, data)
 }
 
 // QueryContext executes a query that returns rows, typically a SELECT.
-// The data object is a struct for any placeholder parameters in the query.
+// The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) QueryContext(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
-	qt, err := db.tpl.Exec(query, data)
-	if err != nil {
-		return nil, fmt.Errorf("yesql: %s", err)
-	}
-	q, args, err := db.bvar.Parse(qt, data)
-	if err != nil {
-		return nil, fmt.Errorf("yesql: %s", err)
-	}
-	return db.DB.QueryContext(ctx, q, args...)
+	return queryContext(db.DB, ctx, query, data, db.tpl, db.bvar)
 }
 
 // Query executes a query that returns rows, typically a SELECT.
-// The data object is a struct for any placeholder parameters in the query.
+// The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) Query(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
 	return db.QueryContext(context.Background(), query, data)
+}
+
+// execContext executes a query without returning any rows.
+// The data object is a map/struct for any placeholder parameters in the query.
+func execContext(
+	db Execer,
+	ctx context.Context,
+	query string,
+	data interface{},
+	tpl template.Execer,
+	bvar bindvar.Parser,
+) (sql.Result, error) {
+	qt, err := tpl.Exec(query, data)
+	if err != nil {
+		return nil, fmt.Errorf("yesql: %s", err)
+	}
+	q, args, err := bvar.Parse(qt, data)
+	if err != nil {
+		return nil, fmt.Errorf("yesql: %s", err)
+	}
+	return db.ExecContext(ctx, q, args...)
+}
+
+// queryContext executes a query that returns rows, typically a SELECT.
+// The data object is a map/struct for any placeholder parameters in the query.
+func queryContext(
+	db Queryer,
+	ctx context.Context,
+	query string,
+	data interface{},
+	tpl template.Execer,
+	bvar bindvar.Parser,
+) (*sql.Rows, error) {
+	qt, err := tpl.Exec(query, data)
+	if err != nil {
+		return nil, fmt.Errorf("yesql: %s", err)
+	}
+	q, args, err := bvar.Parse(qt, data)
+	if err != nil {
+		return nil, fmt.Errorf("yesql: %s", err)
+	}
+	return db.QueryContext(ctx, q, args...)
 }
 
 /*
