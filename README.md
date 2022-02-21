@@ -43,12 +43,14 @@ Use `Query` or `QueryContext` to execute a query to return data. Templates offer
 ```go
 type BookSearch struct {
     Author string    
+    Title  string
     Genre  string
 }
 
 const sqlSearchBooks = `
 SELECT * FROM books
 WHERE author = @Author
+{{if .Title}}AND title ILIKE :@Title{{end}}
 {{if .Genre}}AND genre = @Genre{{end}}
 `
 
