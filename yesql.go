@@ -17,12 +17,6 @@ type Queryer interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 }
 
-type DB struct {
-	DB   *sql.DB
-	tpl  template.Execer
-	bvar bindvar.Parser
-}
-
 // Open opens a database specified by its database driver name and a
 // driver-specific data source name, usually consisting of at least a
 // database name and connection information.
@@ -45,30 +39,6 @@ func Open(driver, dsn string) (*DB, error) {
 		tpl:  template.New(),
 		bvar: bindvar.New(driver),
 	}, nil
-}
-
-// ExecContext executes a query without returning any rows.
-// The data object is a map/struct for any placeholder parameters in the query.
-func (db *DB) ExecContext(ctx context.Context, query string, data interface{}) (sql.Result, error) {
-	return execContext(db.DB, ctx, query, data, db.tpl, db.bvar)
-}
-
-// Exec executes a query without returning any rows.
-// The data object is a map/struct for any placeholder parameters in the query.
-func (db *DB) Exec(query string, data interface{}) (sql.Result, error) {
-	return db.ExecContext(context.Background(), query, data)
-}
-
-// QueryContext executes a query that returns rows, typically a SELECT.
-// The data object is a map/struct for any placeholder parameters in the query.
-func (db *DB) QueryContext(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
-	return queryContext(db.DB, ctx, query, data, db.tpl, db.bvar)
-}
-
-// Query executes a query that returns rows, typically a SELECT.
-// The data object is a map/struct for any placeholder parameters in the query.
-func (db *DB) Query(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
-	return db.QueryContext(context.Background(), query, data)
 }
 
 // execContext executes a query without returning any rows.
