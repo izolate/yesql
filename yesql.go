@@ -42,6 +42,16 @@ func Open(driver, dsn string) (*DB, error) {
 	}, nil
 }
 
+// MustOpen opens a database specified by its database driver name and a
+// driver-specific data source name, and panics on any errors.
+func MustOpen(driver, dsn string) *DB {
+	db, err := Open(driver, dsn)
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
 // execContext executes a query without returning any rows, e.g. an INSERT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func execContext(
@@ -56,10 +66,13 @@ func execContext(
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
+	fmt.Println("QUERY TEMPLATE:", qt)
 	q, args, err := bvar.Parse(qt, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
+	fmt.Println("QUERY:", q)
+	fmt.Println("ARGS:", args)
 	return db.ExecContext(ctx, q, args...)
 }
 
