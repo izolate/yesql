@@ -3,6 +3,7 @@ package bindvar
 import (
 	"database/sql/driver"
 	"fmt"
+	"reflect"
 )
 
 // Named argument prefix syntax used by the std lib.
@@ -32,11 +33,15 @@ func (parser) Parse(query string, data interface{}) (string, []interface{}, erro
 
 	// Parse named args
 	q, nvs := parse(qt)
+	args := []interface{}{}
 	for _, nv := range nvs {
-		fmt.Printf("%d) %v %v\n", nv.Ordinal, nv.Name, nv.Value)
+		// Get the named arg values from data
+		v := value(data, nv.Name)
+		args = append(args, v)
+		fmt.Printf("%d) %v %v\n", nv.Ordinal, nv.Name, v)
 	}
 
-	return string(q), nil, nil
+	return string(q), args, nil
 }
 
 func parse(query []rune) (s []rune, args []driver.NamedValue) {
@@ -71,11 +76,14 @@ func parse(query []rune) (s []rune, args []driver.NamedValue) {
 
 			op++ // Increment the arg's ordinal position.
 
+			// Get the name of the arg, ignoring the prefix (@).
+			a1 := a + 1
+			n := string(query[a1:b])
+
 			// Add the named arg to the list of all found args.
-			a1 := a + 1 // Ignore prefix (@) in arg name.
 			nv := driver.NamedValue{
 				Ordinal: op,
-				Name:    string(query[a1:b]),
+				Name:    n,
 			}
 			args = append(args, nv)
 
@@ -92,6 +100,21 @@ func parse(query []rune) (s []rune, args []driver.NamedValue) {
 		a++
 	}
 	return s, args
+}
+
+func value(data interface{}, name string) interface{} {
+	if m, ok := data.(map[string]interface{}); ok {
+		if v, ok := m[name]; ok {
+			return v
+		}
+		return nil
+	}
+	if v := reflect.Indirect(reflect.ValueOf(data)); v.Kind() == reflect.Struct {
+		if f := v.FieldByName(name); f.IsValid() {
+			return f.Interface()
+		}
+	}
+	return nil
 }
 
 func formatArg(driver string, nv driver.NamedValue) string {

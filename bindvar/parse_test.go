@@ -45,34 +45,38 @@ func TestParse(t *testing.T) {
 		},
 		{
 			driver: "postgres",
-			qt:     "SELECT * FROM strings WHERE locale = @Locale AND text ILIKE @很好 LIMIT @Limit",
+			qt:     "SELECT * FROM strings WHERE locale = @Locale AND text ILIKE @J文 LIMIT @Limit",
 			data: struct {
 				Locale string
-				很好     string
+				J文     string
 				Limit  int
-			}{Locale: "CN", 很好: "很好", Limit: 3},
+			}{Locale: "JP", J文: "すみません", Limit: 3},
 			q:    "SELECT * FROM strings WHERE locale = $1 AND text ILIKE $2 LIMIT $3",
-			args: []interface{}{"Foo", "很好", 3},
+			args: []interface{}{"JP", "すみません", 3},
 		},
 		{
 			driver: "postgres",
-			qt:     "SELECT created_at::timestamp(0) WHERE created_at > @Date",
-			data: struct {
-				Date time.Time
-			}{Date: time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
+			qt:     "SELECT created_at::timestamp(0) WHERE created_at > @date",
+			data: map[string]interface{}{
+				"date": time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC),
+			},
 			q:    "SELECT created_at::timestamp(0) WHERE created_at > $1",
 			args: []interface{}{time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
 		},
 	}
 	for _, tc := range tcs {
 		bvar := New(tc.driver)
-		q, _, err := bvar.Parse(tc.qt, tc.data)
+		q, args, err := bvar.Parse(tc.qt, tc.data)
 		if err != nil {
 			t.Fatalf(err.Error())
 		}
 		if q != tc.q {
-			t.Fatalf("Not equal:\n%s\n-----\n%s\n", tc.q, q)
+			t.Fatalf("Query not equal:\n%s\n-----\n%s\n", tc.q, q)
 		}
-		// TODO: assert arg values
+		for i, a := range args {
+			if a != tc.args[i] {
+				t.Fatalf("Args not equal:\n%s\n-----\n%s\n", a, tc.args[i])
+			}
+		}
 	}
 }
