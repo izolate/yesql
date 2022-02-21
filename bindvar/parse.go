@@ -68,7 +68,7 @@ func parse(driverName string, query []rune) (s []rune, args []driver.NamedValue)
 			// We've found an argument! Create second pointer to find end of argument.
 			b := a
 
-			// Find the first non-allowed rune to infer the end of the arg.
+			// Find the first terminating character to infer the end of the arg.
 			for b < len(query) {
 				rb := query[b]
 				if reArgTerm.MatchString(string(rb)) {
