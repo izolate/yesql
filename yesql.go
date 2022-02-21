@@ -66,13 +66,10 @@ func execContext(
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	fmt.Println("QUERY TEMPLATE:", qt)
 	q, args, err := bvar.Parse(qt, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	fmt.Println("QUERY:", q)
-	fmt.Println("ARGS:", args)
 	return db.ExecContext(ctx, q, args...)
 }
 
