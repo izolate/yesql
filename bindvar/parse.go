@@ -109,9 +109,21 @@ func value(data interface{}, name string) interface{} {
 		}
 		return nil
 	}
-	if v := reflect.Indirect(reflect.ValueOf(data)); v.Kind() == reflect.Struct {
+
+	v := reflect.Indirect(reflect.ValueOf(data))
+	switch {
+	case v.Kind() == reflect.Struct: // Struct
 		if f := v.FieldByName(name); f.IsValid() {
 			return f.Interface()
+		}
+	case v.Elem().Kind() == reflect.Struct: // Pointer struct
+		el := v.Elem()
+		if f := el.FieldByName(name); f.IsValid() {
+			return f.Interface()
+		}
+	case v.Elem().Kind() == reflect.Map: // Map pointer
+		if val := v.Elem().MapIndex(reflect.ValueOf(name)); !val.IsZero() {
+			return val.Interface()
 		}
 	}
 	return nil
