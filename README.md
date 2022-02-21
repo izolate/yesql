@@ -19,22 +19,53 @@ func main() {
 }
 ```
 
-Use `Exec` or `ExecContext` to execute a query without returning data. Named parameters (`:Foo`) allow you to bind arguments to map (or struct) fields:
+Use `Exec` or `ExecContext` to execute a query without returning data. Named parameters (`@Foo`) allow you to bind arguments to map (or struct) fields:
 
 ```go
-type User struct {
-    ID    string
-    Email string
+type Book struct {
+    ID     string
+    Title  string
+    Author string
 }
 
-func insertUser(c context.Context, u User) error {
-    // ID and Email are bound to the User fields
-    stmt := `INSERT INTO users (id, email) VALUES (:ID, :Email)`
-    _, err := db.ExecContext(c, stmt, u)
+func InsertUser(c context.Context, b Book) error {
+    q := `INSERT INTO users (id, title, author) VALUES (@ID, @Title, @Author)`
+    _, err := db.ExecContext(c, q, u)
     if err != nil {
         return err
     }
     return nil
+}
+```
+
+Use `Query` or `QueryContext` to execute a query to return data. Templates offer you the chance to perform complex logic without string concatenation or query building:
+
+```go
+type BookQuery struct {
+    Author   string    
+    Category string
+}
+
+const sqlListBooks = `
+SELECT * FROM books
+WHERE author = @Author
+{{if .Category}}AND category = @Category{{end}}
+`
+
+func ListBooks(c context.Context, bq BookQuery) ([]Book, error) {
+    rows, err := db.QueryContext(c, sqlListBooks, bq)
+    if err != nil {
+        return nil, err
+    }
+    books := []Book
+    for rows.Next() {
+        var b Book
+        if err := rows.Scan(&b.ID, &b.Title, &b.Author, &b.Category); err != nil {
+            return nil, err
+        }
+        books = append(books, b)
+    }
+    return books, nil
 }
 ```
 
