@@ -27,12 +27,12 @@ type parser struct {
 	driver string
 }
 
-func (parser) Parse(query string, data interface{}) (string, []interface{}, error) {
+func (p parser) Parse(query string, data interface{}) (string, []interface{}, error) {
 	// Convert to rune to handle unicode strings
 	qt := []rune(query)
 
 	// Parse named args
-	q, nvs := parse(qt)
+	q, nvs := parse(p.driver, qt)
 	args := []interface{}{}
 	for _, nv := range nvs {
 		// Get the named arg values from data
@@ -44,7 +44,9 @@ func (parser) Parse(query string, data interface{}) (string, []interface{}, erro
 	return string(q), args, nil
 }
 
-func parse(query []rune) (s []rune, args []driver.NamedValue) {
+// parse parses the named args out of a query and returns a string with
+// the correct arg syntax for the driver, and a list of arg names.
+func parse(driverName string, query []rune) (s []rune, args []driver.NamedValue) {
 	var (
 		a      int  // Pointer used to seek through the string
 		op     int  // The ordinal position of the captured arg
@@ -52,8 +54,6 @@ func parse(query []rune) (s []rune, args []driver.NamedValue) {
 	)
 	for a < len(query) {
 		ra := query[a] // the rune at position a
-
-		fmt.Printf("%s\n", string(ra))
 
 		// Ignore characters inside sql string literals.
 		if string(ra) == "'" {
@@ -66,7 +66,6 @@ func parse(query []rune) (s []rune, args []driver.NamedValue) {
 
 			// Find the first non-allowed rune to infer the end of the arg.
 			for b < len(query) {
-				fmt.Printf("B:%d\n", b)
 				rb := query[b]
 				if string(rb) == " " {
 					break
@@ -88,8 +87,7 @@ func parse(query []rune) (s []rune, args []driver.NamedValue) {
 			args = append(args, nv)
 
 			// Convert the named arg to the correct syntax for the driver.
-			// TODO: support more sql engines than postgres
-			arg := []rune(formatArg("postgres", nv))
+			arg := []rune(argfmt(driverName, nv))
 			s = append(s, arg...)
 
 			a = b // Skip to the end of the arg
@@ -102,6 +100,7 @@ func parse(query []rune) (s []rune, args []driver.NamedValue) {
 	return s, args
 }
 
+// value gets the value for field (name) in the data object.
 func value(data interface{}, name string) interface{} {
 	if m, ok := data.(map[string]interface{}); ok {
 		if v, ok := m[name]; ok {
@@ -110,6 +109,7 @@ func value(data interface{}, name string) interface{} {
 		return nil
 	}
 
+	// If data is not a simple map, use reflection to get the value.
 	v := reflect.Indirect(reflect.ValueOf(data))
 	switch {
 	case v.Kind() == reflect.Struct: // Struct
@@ -129,8 +129,11 @@ func value(data interface{}, name string) interface{} {
 	return nil
 }
 
-func formatArg(driver string, nv driver.NamedValue) string {
+// argfmt converts a named arg to the correct syntax for the driver.
+// e.g. :foo => $1 (postgres)
+func argfmt(driver string, nv driver.NamedValue) string {
 	switch driver {
+	// TODO: support more sql engines than postgres
 	case "postgres":
 		return fmt.Sprintf("$%d", nv.Ordinal)
 	default:
