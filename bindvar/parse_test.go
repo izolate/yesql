@@ -63,6 +63,15 @@ func TestParse(t *testing.T) {
 			q:    "SELECT created_at::timestamp(0) WHERE created_at > $1",
 			args: []interface{}{time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
 		},
+		{
+			driver: "postgres",
+			qt:     "INSERT INTO authors (name) VALUES (@Name)",
+			data: map[string]interface{}{
+				"Name": "Max",
+			},
+			q:    "INSERT INTO authors (name) VALUES ($1)",
+			args: []interface{}{"Max"},
+		},
 	}
 	for _, tc := range tcs {
 		bvar := New(tc.driver)

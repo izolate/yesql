@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"reflect"
+	"regexp"
 )
 
 // Named argument prefix syntax used by the std lib.
@@ -39,11 +40,13 @@ func (p parser) Parse(query string, data interface{}) (string, []interface{}, er
 		// Get the named arg values from data
 		v := value(data, nv.Name)
 		args = append(args, v)
-		fmt.Printf("%d) %v %v\n", nv.Ordinal, nv.Name, v)
 	}
 
 	return string(q), args, nil
 }
+
+// reArgTerm is the terminating character of a named arg.
+var reArgTerm = regexp.MustCompile(`[[:space:]]|;|\)`)
 
 // parse parses the named args out of a query and returns a string with
 // the correct arg syntax for the driver, and a list of arg names.
@@ -68,7 +71,7 @@ func parse(driverName string, query []rune) (s []rune, args []driver.NamedValue)
 			// Find the first non-allowed rune to infer the end of the arg.
 			for b < len(query) {
 				rb := query[b]
-				if string(rb) == " " {
+				if reArgTerm.MatchString(string(rb)) {
 					break
 				}
 				b++
