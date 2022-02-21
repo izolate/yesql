@@ -30,7 +30,7 @@ type Book struct {
 
 func InsertUser(c context.Context, b Book) error {
     q := `INSERT INTO users (id, title, author) VALUES (@ID, @Title, @Author)`
-    _, err := db.ExecContext(c, q, u)
+    _, err := db.ExecContext(c, q, b)
     if err != nil {
         return err
     }
@@ -41,23 +41,23 @@ func InsertUser(c context.Context, b Book) error {
 Use `Query` or `QueryContext` to execute a query to return data. Templates offer you the chance to perform complex logic without string concatenation or query building:
 
 ```go
-type BookQuery struct {
+type BookSearch struct {
     Author   string    
     Category string
 }
 
-const sqlListBooks = `
+const sqlSearchBooks = `
 SELECT * FROM books
 WHERE author = @Author
 {{if .Category}}AND category = @Category{{end}}
 `
 
-func ListBooks(c context.Context, bq BookQuery) ([]Book, error) {
-    rows, err := db.QueryContext(c, sqlListBooks, bq)
+func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
+    rows, err := db.QueryContext(c, sqlSearchBooks, s)
     if err != nil {
         return nil, err
     }
-    books := []Book
+    books := []Book{}
     for rows.Next() {
         var b Book
         if err := rows.Scan(&b.ID, &b.Title, &b.Author, &b.Category); err != nil {
