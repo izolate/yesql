@@ -2,14 +2,12 @@
 
 WIP
 
-## feature checklist
+## Feature checklist
 
-```
-[x] Templated SQL statements  
-[-] Named placeholder parameters (bindvars)  
-[ ] Statement logging  
-[ ] Query tracing  
-[ ] Struct scanning  
-[-] Unicode support  
-[-] Postgres support
-```
+- [x] Templated SQL statements
+- [x] Named arguments (bindvars)
+- [] Statement logging
+- [] Query tracing
+- [] Struct scanning
+- [] Unicode support
+- [x] Postgres support
