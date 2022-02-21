@@ -1,6 +1,6 @@
 # yesql
 
-WIP
+A tool to write SQL in Go more effectively. WIP.
 
 ## Feature checklist
 
@@ -11,3 +11,9 @@ WIP
 - [ ] Struct scanning
 - [ ] Unicode support
 - [x] Postgres support
+
+## Todo
+
+- [x] Exec/ExecContext
+- [x] Query/QueryContext
+- [ ] QueryRow/QueryRowContext

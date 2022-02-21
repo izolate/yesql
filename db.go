@@ -14,13 +14,13 @@ type DB struct {
 	bvar bindvar.Parser
 }
 
-// ExecContext executes a query without returning any rows.
+// ExecContext executes a query without returning any rows, e.g. an INSERT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) ExecContext(ctx context.Context, query string, data interface{}) (sql.Result, error) {
 	return execContext(db.DB, ctx, query, data, db.tpl, db.bvar)
 }
 
-// Exec executes a query without returning any rows.
+// Exec executes a query without returning any rows, e.g. an INSERT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) Exec(query string, data interface{}) (sql.Result, error) {
 	return db.ExecContext(context.Background(), query, data)
@@ -36,6 +36,26 @@ func (db *DB) QueryContext(ctx context.Context, query string, data interface{}) 
 // The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) Query(ctx context.Context, query string, data interface{}) (*sql.Rows, error) {
 	return db.QueryContext(context.Background(), query, data)
+}
+
+// QueryRowContext executes a query that is expected to return at most one row.
+// QueryRowContext always returns a non-nil value. Errors are deferred until
+// Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
+func (db *DB) QueryRowContext(ctx context.Context, query string, data interface{}) *sql.Row {
+	return nil // TODO: implement
+}
+
+// QueryRow executes a query that is expected to return at most one row.
+// QueryRow always returns a non-nil value. Errors are deferred until
+// Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
+func (db *DB) QueryRow(query string, data interface{}) *sql.Row {
+	return db.QueryRowContext(context.Background(), query, data)
 }
 
 // BeginTx starts a transaction.

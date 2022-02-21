@@ -19,6 +19,7 @@ type Parser interface {
 	Parse(query string, data interface{}) (q string, args []interface{}, err error)
 }
 
+// New creates a new parser.
 func New(driver string) Parser {
 	return &parser{driver}
 }
@@ -133,7 +134,7 @@ func value(data interface{}, name string) interface{} {
 // e.g. :foo => $1 (postgres)
 func argfmt(driver string, nv driver.NamedValue) string {
 	switch driver {
-	// TODO: support more sql engines than postgres
+	// TODO: support more sql engines
 	case "postgres":
 		return fmt.Sprintf("$%d", nv.Ordinal)
 	default:

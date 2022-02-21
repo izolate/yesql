@@ -15,6 +15,7 @@ type Execer interface {
 
 type Queryer interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
 
 // Open opens a database specified by its database driver name and a
@@ -41,7 +42,7 @@ func Open(driver, dsn string) (*DB, error) {
 	}, nil
 }
 
-// execContext executes a query without returning any rows.
+// execContext executes a query without returning any rows, e.g. an INSERT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func execContext(
 	db Execer,
