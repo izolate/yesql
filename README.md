@@ -50,7 +50,7 @@ type BookSearch struct {
 const sqlSearchBooks = `
 SELECT * FROM books
 WHERE author = @Author
-{{if .Title}}AND title ILIKE :@Title{{end}}
+{{if .Title}}AND title ILIKE @Title{{end}}
 {{if .Genre}}AND genre = @Genre{{end}}
 `
 
