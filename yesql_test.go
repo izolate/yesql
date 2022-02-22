@@ -8,6 +8,7 @@ import (
 )
 
 func TestExec(t *testing.T) {
+	its := assert{t}
 	authors := []author{
 		{Name: "George R.R. Martin"},
 		{Name: "Lewis Carroll"},
@@ -21,16 +22,10 @@ func TestExec(t *testing.T) {
 	for _, a := range authors {
 		q := "INSERT INTO authors (name) VALUES (@Name);"
 		res, err := db.Exec(q, a)
-		if err != nil {
-			t.Fatal(err)
-		}
+		its.NilErr(err)
 		ra, err := res.RowsAffected()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if ra != int64(1) {
-			t.Fatal("Incorrect rows affected")
-		}
+		its.NilErr(err)
+		its.IntEq(1, int(ra))
 	}
 
 	books := []book{
@@ -46,17 +41,51 @@ func TestExec(t *testing.T) {
 	}
 
 	for _, b := range books {
-		q := "INSERT INTO books (title, author, genre) VALUES (@Title, @Author, @Genre);"
+		q := `
+		INSERT INTO books (
+			title,
+			author,
+			genre
+		) VALUES (
+			@Title,
+			@Author,
+			@Genre
+		);`
 		res, err := db.ExecContext(context.TODO(), q, b)
-		if err != nil {
-			t.Fatal(err)
-		}
+		its.NilErr(err)
 		ra, err := res.RowsAffected()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if ra != int64(1) {
-			t.Fatal("Incorrect rows affected")
-		}
+		its.NilErr(err)
+		its.IntEq(1, int(ra))
 	}
+}
+
+func TestQuery(t *testing.T) {
+	t.Run("StructScan", func(t *testing.T) {
+		its := assert{t}
+		type entity struct {
+			Book   string `db:"book"`
+			Author string `db:"author"`
+			Genre  string `db:"genre"`
+		}
+		q := `
+		SELECT
+			b.title AS book,
+			a.name AS author,
+			g.name AS genre
+		FROM books b
+		JOIN authors a ON a.id = b.author
+		JOIN genres g ON g.id = b.genre`
+		rows, err := db.QueryContext(context.TODO(), q, nil)
+		its.NilErr(err)
+		es := []entity{}
+		for rows.Next() {
+			var e entity
+			its.NilErr(rows.StructScan(&e))
+			es = append(es, e)
+		}
+		its.IntEq(9, len(es))
+		for _, e := range es {
+			its.StringEq("foo", e.Author)
+		}
+	})
 }

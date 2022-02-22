@@ -65,3 +65,30 @@ func TestMain(m *testing.M) {
 	mustExec(sqlUp)
 	os.Exit(m.Run())
 }
+
+type assert struct {
+	t *testing.T
+}
+
+func (a assert) NilErr(e error) {
+	if e != nil {
+		a.t.Fatalf("err is not nil: %s", e.Error())
+	}
+}
+
+func (a assert) Truthy(b bool) {
+	if !b {
+		a.t.Fatal("is not true")
+	}
+}
+func (a assert) StringEq(x, y string) {
+	if x != y {
+		a.t.Fatalf("%s is not %s", y, x)
+	}
+}
+
+func (a assert) IntEq(x, y int) {
+	if x != y {
+		a.t.Fatalf("expected %d, got %d", x, y)
+	}
+}
