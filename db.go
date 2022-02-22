@@ -34,7 +34,7 @@ func (db *DB) QueryContext(ctx context.Context, query string, data interface{}) 
 
 // Query executes a query that returns rows, typically a SELECT.
 // The data object is a map/struct for any placeholder parameters in the query.
-func (db *DB) Query(ctx context.Context, query string, data interface{}) (*Rows, error) {
+func (db *DB) Query(query string, data interface{}) (*Rows, error) {
 	return db.QueryContext(context.Background(), query, data)
 }
 
