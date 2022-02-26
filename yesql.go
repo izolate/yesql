@@ -3,6 +3,7 @@ package yesql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/izolate/yesql/bindvar"
@@ -16,6 +17,19 @@ type Execer interface {
 type Queryer interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+}
+
+// New instantiates yesql with an existing database connection.
+func New(db *sql.DB) (*DB, error) {
+	drivers := sql.Drivers()
+	if len(drivers) == 0 {
+		return nil, errors.New("yesql: no sql driver found")
+	}
+	return &DB{
+		DB:   db,
+		tpl:  template.New(),
+		bvar: bindvar.New(drivers[0]),
+	}, nil
 }
 
 // Open opens a database specified by its database driver name and a
