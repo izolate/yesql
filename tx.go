@@ -27,7 +27,7 @@ type Tx struct {
 // ExecContext executes a query that doesn't return rows.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (tx *Tx) ExecContext(ctx context.Context, query string, data interface{}) (sql.Result, error) {
-	return execContext(tx.Tx, ctx, query, data, tx.tpl, tx.bvar)
+	return ExecContext(tx.Tx, ctx, query, data, tx.tpl, tx.bvar)
 }
 
 // Exec executes a query without returning any rows.
@@ -39,7 +39,7 @@ func (tx *Tx) Exec(query string, data interface{}) (sql.Result, error) {
 // QueryContext executes a query that returns rows, typically a SELECT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (tx *Tx) QueryContext(ctx context.Context, query string, data interface{}) (*Rows, error) {
-	return queryContext(tx.Tx, ctx, query, data, tx.tpl, tx.bvar)
+	return QueryContext(tx.Tx, ctx, query, data, tx.tpl, tx.bvar)
 }
 
 // Query executes a query that returns rows, typically a SELECT.

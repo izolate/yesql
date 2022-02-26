@@ -52,9 +52,9 @@ func MustOpen(driver, dsn string) *DB {
 	return db
 }
 
-// execContext executes a query without returning any rows, e.g. an INSERT.
+// ExecContext executes a query without returning any rows, e.g. an INSERT.
 // The data object is a map/struct for any placeholder parameters in the query.
-func execContext(
+func ExecContext(
 	db Execer,
 	ctx context.Context,
 	query string,
@@ -73,9 +73,9 @@ func execContext(
 	return db.ExecContext(ctx, q, args...)
 }
 
-// queryContext executes a query that returns rows, typically a SELECT.
+// QueryContext executes a query that returns rows, typically a SELECT.
 // The data object is a map/struct for any placeholder parameters in the query.
-func queryContext(
+func QueryContext(
 	db Queryer,
 	ctx context.Context,
 	query string,
