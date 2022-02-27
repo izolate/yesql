@@ -90,4 +90,26 @@ func TestParse(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("Pointers", func(t *testing.T) {
+		// Ensure data supplied as a pointer also works
+		data := struct {
+			Name string
+		}{Name: "Max"}
+
+		bvar := New("postgres")
+		q, args, err := bvar.Parse(`INSERT INTO authors (name) VALUES (@Name)`, &data)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+
+		eq := `INSERT INTO authors (name) VALUES ($1)`
+		if q != eq {
+			t.Fatalf("Query not equal:\n%s\n-----\n%s\n", eq, q)
+		}
+
+		if args[0] != "Max" {
+			t.Fatal("Args not equal:", "Max", args[0])
+		}
+	})
 }
