@@ -2,6 +2,7 @@ package yesql
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -136,7 +137,7 @@ func TestQuery(t *testing.T) {
 		}
 	})
 
-	t.Run("StructScan", func(t *testing.T) {
+	t.Run("ScanStruct", func(t *testing.T) {
 		its := assert{t}
 		type entity struct {
 			Book   string `db:"book"`
@@ -156,7 +157,8 @@ func TestQuery(t *testing.T) {
 		es := []entity{}
 		for rows.Next() {
 			var e entity
-			its.NilErr(rows.StructScan(&e))
+			fmt.Println("======= rows.Next ========")
+			its.NilErr(rows.ScanStruct(&e))
 			es = append(es, e)
 		}
 		its.IntEq(9, len(es))
