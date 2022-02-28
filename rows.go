@@ -22,88 +22,38 @@ func (rs *Rows) ScanStruct(dest interface{}) error {
 	return scan(rs.Rows, dest)
 }
 
-const tagKeyDB = "db"
-
-var (
-// typeScanner = reflect.TypeOf((*sql.Scanner)(nil)).Elem()
-// typeValuer  = reflect.TypeOf((*driver.Valuer)(nil)).Elem()
-)
+const structTagDB = "db"
 
 func scan(rows *sql.Rows, dest interface{}) error {
 	dv := reflect.ValueOf(dest)
 
-	cols, err := rows.Columns()
-	if err != nil {
-		return err
-	}
-	dests := []interface{}{}
-	for _, c := range cols {
-		dfi, ok := fieldIndex(dv.Elem().Type(), tagKeyDB, c)
-		if !ok {
-			return fmt.Errorf("yesql: field not found in destination for column: %s", c)
-		}
-		fmt.Println("DFI:", dfi)
-		df := dv.Elem().Field(dfi)
-		dests = append(dests, df.Addr().Interface())
-	}
-
-	fmt.Println(dests)
-	// Loop over dest fields - START
-	// Loop over dest fields - END
-	if err := rows.Scan(dests...); err != nil {
-		return err
-	}
-	fmt.Println("RESULT", dest)
-	return nil
-}
-
-func scanWORKS(rows *sql.Rows, dest interface{}) error {
-	type A struct {
-		A string
-	}
-	a := A{}
-	av := reflect.ValueOf(&a).Elem().Field(0).Addr()
-	// av := reflect.ValueOf(&a.A)
-	var b, c string
-	if err := rows.Scan(av.Interface(), &b, &c); err != nil {
-		return err
-	}
-	fmt.Println("RESULT", a, b, c)
-	return nil
-}
-
-func scan3(rows *sql.Rows, dest interface{}) error {
-	var a, b, c string
-	av := reflect.ValueOf(&a)
-	if err := rows.Scan(av.Interface(), &b, &c); err != nil {
-		return err
-	}
-	fmt.Println("RESULT", a, b, c)
-	return nil
-}
-
-func scan2(rows *sql.Rows, dest interface{}) error {
-	t := reflect.TypeOf(dest)
-	fmt.Println("Type:", t)
-
 	// Ensure destination is a pointer.
-	k := t.Kind()
+	k := dv.Kind()
 	if k != reflect.Ptr {
 		return fmt.Errorf("yesql: destination not a pointer: %s", k)
 	}
+	// Ensure destination elem is a struct.
+	k = dv.Elem().Kind()
+	if k != reflect.Struct {
+		return fmt.Errorf("yesql: destination not a struct: %s", k)
+	}
 
+	// Identify the column names in the rows.
 	cols, err := rows.Columns()
 	if err != nil {
 		return err
 	}
+
+	// Create a list of pointers to the fields in the destination struct
+	// that correspond to the row columns, based on the db struct tag.
 	dests := []interface{}{}
 	for _, c := range cols {
-		// Find the field with the db tag that matches the column name.
-		f, ok := field(t.Elem(), tagKeyDB, c)
+		dfi, ok := fieldIndex(dv.Elem().Type(), structTagDB, c)
 		if !ok {
 			return fmt.Errorf("yesql: field not found in destination for column: %s", c)
 		}
-		fmt.Println("FIELD FOUND:", f)
+		df := dv.Elem().Field(dfi)
+		dests = append(dests, df.Addr().Interface())
 	}
 	return rows.Scan(dests...)
 }
@@ -117,16 +67,4 @@ func fieldIndex(t reflect.Type, key, value string) (int, bool) {
 		}
 	}
 	return -1, false
-}
-
-// field finds a field in a struct with a struct tag key that that equals a value.
-// e.g. Name string `db:"name"` => field(t, "db", "name") => Name
-func field(t reflect.Type, key, value string) (reflect.StructField, bool) {
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		if f.Tag.Get(key) == value {
-			return f, true
-		}
-	}
-	return reflect.StructField{}, false
 }

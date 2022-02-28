@@ -2,7 +2,6 @@ package yesql
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -10,15 +9,6 @@ import (
 
 func TestExec(t *testing.T) {
 	its := assert{t}
-	authors := []author{
-		{Name: "George R.R. Martin"},
-		{Name: "Lewis Carroll"},
-		{Name: "J.R.R. Tolkien"},
-		{Name: "Stephen King"},
-		{Name: "Douglas Adams"},
-		{Name: "Frank Herbert"},
-		{Name: "George Orwell"},
-	}
 
 	for _, a := range authors {
 		q := "INSERT INTO authors (name) VALUES (@Name);"
@@ -27,18 +17,6 @@ func TestExec(t *testing.T) {
 		ra, err := res.RowsAffected()
 		its.NilErr(err)
 		its.IntEq(1, int(ra))
-	}
-
-	books := []book{
-		{Title: "A Storm Of Swords", Author: 1, Genre: 1},
-		{Title: "Alice's Adventures In Wonderland", Author: 2, Genre: 1},
-		{Title: "The Fellowship Of The Ring", Author: 3, Genre: 1},
-		{Title: "Salem's Lot", Author: 4, Genre: 2},
-		{Title: "It", Author: 4, Genre: 2},
-		{Title: "The Shining", Author: 4, Genre: 2},
-		{Title: "The Hitchhiker's Guide to the Galaxy", Author: 5, Genre: 3},
-		{Title: "Dune", Author: 6, Genre: 3},
-		{Title: "1984", Author: 7, Genre: 3},
 	}
 
 	for _, b := range books {
@@ -157,14 +135,25 @@ func TestQuery(t *testing.T) {
 		es := []entity{}
 		for rows.Next() {
 			var e entity
-			fmt.Println("======= rows.Next ========")
 			its.NilErr(rows.ScanStruct(&e))
 			es = append(es, e)
 		}
 		its.IntEq(9, len(es))
-		for _, e := range es {
-			t.Log(e)
-			// its.StringEq("foo", e.Author)
+		expected := []entity{
+			{Book: "A Storm Of Swords", Author: "George R.R. Martin", Genre: "Fantasy"},
+			{Book: "Alice's Adventures In Wonderland", Author: "Lewis Carroll", Genre: "Fantasy"},
+			{Book: "The Fellowship Of The Ring", Author: "J.R.R. Tolkien", Genre: "Fantasy"},
+			{Book: "Salem's Lot", Author: "Stephen King", Genre: "Horror"},
+			{Book: "It", Author: "Stephen King", Genre: "Horror"},
+			{Book: "The Shining", Author: "Stephen King", Genre: "Horror"},
+			{Book: "The Hitchhiker's Guide to the Galaxy", Author: "Douglas Adams", Genre: "Sci-Fi"},
+			{Book: "Dune", Author: "Frank Herbert", Genre: "Sci-Fi"},
+			{Book: "1984", Author: "George Orwell", Genre: "Sci-Fi"},
+		}
+		for i, e := range es {
+			its.StringEq(expected[i].Book, e.Book)
+			its.StringEq(expected[i].Author, e.Author)
+			its.StringEq(expected[i].Genre, e.Genre)
 		}
 	})
 }
