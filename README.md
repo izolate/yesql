@@ -71,7 +71,7 @@ func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
 }
 ```
 
-In fact, positional scanning is inflexible. Let's scan into a struct instead using `db` struct tags:
+In fact, positional scanning is inflexible. Let's scan into a struct instead using `db` struct tags using `.ScanStruct()`:
 
 ```go
 type Book struct {
@@ -89,7 +89,7 @@ func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
     books := []Book{}
     for rows.Next() {
         var b Book
-        if err := rows.StructScan(&b); err != nil {
+        if err := rows.ScanStruct(&b); err != nil {
             return nil, err
         }
         books = append(books, b)
