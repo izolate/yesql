@@ -104,7 +104,7 @@ func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
 - [x] Named arguments (bindvars)
 - [ ] Statement logging
 - [ ] Query tracing
-- [-] Struct scanning
+- [x] Struct scanning
 - [ ] Unicode support
 - [x] Postgres support
 
