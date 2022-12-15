@@ -9,7 +9,7 @@ import (
 )
 
 type DB struct {
-	DB   *sql.DB
+	*sql.DB
 	tpl  template.Execer
 	bvar bindvar.Parser
 }

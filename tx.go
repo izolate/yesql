@@ -19,7 +19,7 @@ import (
 // the transaction's Prepare or Stmt methods are closed
 // by the call to Commit or Rollback.
 type Tx struct {
-	Tx   *sql.Tx
+	*sql.Tx
 	tpl  template.Execer
 	bvar bindvar.Parser
 }
