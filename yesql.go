@@ -19,6 +19,12 @@ type Queryer interface {
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
 
+// ExecerQueryer is a union interface comprising Execer and Queryer.
+type ExecerQueryer interface {
+	Execer
+	Queryer
+}
+
 // New instantiates yesql with an existing database connection.
 func New(db *sql.DB) (*DB, error) {
 	drivers := sql.Drivers()

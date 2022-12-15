@@ -157,3 +157,86 @@ func TestQuery(t *testing.T) {
 		}
 	})
 }
+
+func TestQueryRow(t *testing.T) {
+	t.Run("ScanStruct", func(t *testing.T) {
+		its := assert{t}
+		tcs := []struct {
+			query    string
+			data     interface{}
+			expected string // expected titles
+		}{
+			{
+				"SELECT * FROM books WHERE title ~* @title",
+				map[string]interface{}{"title": "1984"},
+				"1984",
+			},
+			{
+				"SELECT * FROM books WHERE title ~* @Title",
+				map[string]interface{}{"Title": "Alice"},
+				"Alice's Adventures In Wonderland",
+			},
+			{
+				"SELECT * FROM books WHERE title ~* @Title",
+				struct{ Title string }{"fellowship of the ring"},
+				"The Fellowship Of The Ring",
+			},
+			{
+				"SELECT * FROM books WHERE author = @AuthorID",
+				struct{ AuthorID int }{6},
+				"Dune",
+			},
+		}
+		for _, tc := range tcs {
+			var b book
+			err := db.QueryRow(tc.query, tc.data).ScanStruct(&b)
+			its.NilErr(err)
+			its.StringEq(tc.expected, b.Title)
+		}
+	})
+
+	t.Run("Scan", func(t *testing.T) {
+		its := assert{t}
+		tcs := []struct {
+			query string
+			data  interface{}
+			id    int
+			title string
+		}{
+			{
+				"SELECT id, title FROM books WHERE title ~* @title",
+				map[string]interface{}{"title": "1984"},
+				9,
+				"1984",
+			},
+			{
+				"SELECT id, title FROM books WHERE title ~* @Title",
+				map[string]interface{}{"Title": "Alice"},
+				2,
+				"Alice's Adventures In Wonderland",
+			},
+			{
+				"SELECT id, title FROM books WHERE title ~* @Title",
+				struct{ Title string }{"fellowship of the ring"},
+				3,
+				"The Fellowship Of The Ring",
+			},
+			{
+				"SELECT id, title FROM books WHERE title ~* @Title",
+				struct{ Title string }{"A"}, // match multiple rows
+				1,
+				"A Storm Of Swords",
+			},
+		}
+		for _, tc := range tcs {
+			var (
+				id    int
+				title string
+			)
+			err := db.QueryRow(tc.query, tc.data).Scan(&id, &title)
+			its.NilErr(err)
+			its.IntEq(tc.id, id)
+			its.StringEq(tc.title, title)
+		}
+	})
+}

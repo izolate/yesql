@@ -120,4 +120,5 @@ func SearchBooks(ctx context.Context, s BookSearch) ([]Book, error) {
 
 - [x] Exec/ExecContext
 - [x] Query/QueryContext
-- [ ] QueryRow/QueryRowContext
+- [x] QueryRow/QueryRowContext
+- [ ] ScanSlice/ScanMap
