@@ -54,7 +54,7 @@ func TestExecTemplate(t *testing.T) {
 	}
 	tpl := New()
 	for _, tc := range tcs {
-		result, err := tpl.Exec(tc.input, tc.data)
+		result, err := tpl.Execute(tc.input, tc.data)
 		if err != nil {
 			t.Fatalf(err.Error())
 		}

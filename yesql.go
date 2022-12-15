@@ -84,10 +84,10 @@ func ExecContext(
 	ctx context.Context,
 	query string,
 	data interface{},
-	tpl template.Execer,
+	tpl template.Executer,
 	bvar bindvar.Parser,
 ) (sql.Result, error) {
-	qt, err := tpl.Exec(query, data)
+	qt, err := tpl.Execute(query, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
@@ -105,10 +105,10 @@ func QueryContext(
 	ctx context.Context,
 	query string,
 	data interface{},
-	tpl template.Execer,
+	tpl template.Executer,
 	bvar bindvar.Parser,
 ) (*Rows, error) {
-	qt, err := tpl.Exec(query, data)
+	qt, err := tpl.Execute(query, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
@@ -131,7 +131,7 @@ func QueryRowContext(
 	ctx context.Context,
 	query string,
 	data interface{},
-	tpl template.Execer,
+	tpl template.Executer,
 	bvar bindvar.Parser,
 ) *Row {
 	rows, err := QueryContext(db, ctx, query, data, tpl, bvar)

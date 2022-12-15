@@ -4,43 +4,51 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"fmt"
+	"sync"
 	"text/template"
 )
 
-// Execer is an interface that handles templates.
-type Execer interface {
-	// Exec parses and executes a string template against the specified
+var m = &sync.Map{}
+
+// Executer is an interface for template execution.
+type Executer interface {
+	// Execute parses and executes a string template against the specified
 	// data object, returning the output string.
-	Exec(text string, data interface{}) (string, error)
+	Execute(template string, data interface{}) (string, error)
 }
 
 // New returns a new template execer to execute templates.
-func New() Execer {
-	return &store{
-		templates: make(map[string]*template.Template),
-	}
+func New() Executer {
+	return &store{m}
 }
 
 type store struct {
-	templates map[string]*template.Template
+	m *sync.Map
 }
 
-func (s store) Exec(text string, data interface{}) (string, error) {
+func (s store) Execute(text string, data interface{}) (string, error) {
+	// generate unique hash for template string
 	h := hash(text)
+
 	var (
 		tpl *template.Template
-		ok  bool
+		err error
 	)
-	// find or create stored template in map
-	tpl, ok = s.templates[h]
-	if !ok {
-		var err error
-		if tpl, err = parse(h, text); err != nil {
+
+	// either find the stored template in the sync map,
+	// or store it in the map if it doesn't already exist.
+	val, ok := s.m.Load(h)
+	if ok {
+		tpl, _ = val.(*template.Template)
+	} else {
+		tpl, err = parse(h, text)
+		if err != nil {
 			return "", err
 		}
-		s.templates[h] = tpl
+		s.m.Store(h, tpl)
 	}
-	ts, err := exec(tpl, data)
+
+	ts, err := execute(tpl, data)
 	if err != nil {
 		return "", err
 	}
@@ -61,7 +69,7 @@ func parse(hash, text string) (*template.Template, error) {
 	return t, nil
 }
 
-func exec(t *template.Template, data interface{}) (string, error) {
+func execute(t *template.Template, data interface{}) (string, error) {
 	var b bytes.Buffer
 	if err := t.Execute(&b, data); err != nil {
 		return "", err

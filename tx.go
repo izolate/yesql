@@ -20,7 +20,7 @@ import (
 // by the call to Commit or Rollback.
 type Tx struct {
 	*sql.Tx
-	tpl  template.Execer
+	tpl  template.Executer
 	bvar bindvar.Parser
 }
 
