@@ -113,3 +113,21 @@ func QueryContext(
 	rows, err := db.QueryContext(ctx, q, args...)
 	return &Rows{rows}, err
 }
+
+// QueryRowContext executes a query that is expected to return at most one row.
+// QueryRowContext always returns a non-nil value. Errors are deferred until
+// Row's Scan method is called.
+// If the query selects no rows, the *Row's Scan will return ErrNoRows.
+// Otherwise, the *Row's Scan scans the first selected row and discards
+// the rest.
+func QueryRowContext(
+	db Queryer,
+	ctx context.Context,
+	query string,
+	data interface{},
+	tpl template.Execer,
+	bvar bindvar.Parser,
+) *Row {
+	rows, err := QueryContext(db, ctx, query, data, tpl, bvar)
+	return &Row{rows: rows, err: err}
+}

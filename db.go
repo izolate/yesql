@@ -44,8 +44,8 @@ func (db *DB) Query(query string, data interface{}) (*Rows, error) {
 // If the query selects no rows, the *Row's Scan will return ErrNoRows.
 // Otherwise, the *Row's Scan scans the first selected row and discards
 // the rest.
-func (db *DB) QueryRowContext(ctx context.Context, query string, data interface{}) *sql.Row {
-	return nil // TODO: implement
+func (db *DB) QueryRowContext(ctx context.Context, query string, data interface{}) *Row {
+	return QueryRowContext(db.DB, ctx, query, data, db.tpl, db.bvar)
 }
 
 // QueryRow executes a query that is expected to return at most one row.
@@ -54,7 +54,10 @@ func (db *DB) QueryRowContext(ctx context.Context, query string, data interface{
 // If the query selects no rows, the *Row's Scan will return ErrNoRows.
 // Otherwise, the *Row's Scan scans the first selected row and discards
 // the rest.
-func (db *DB) QueryRow(query string, data interface{}) *sql.Row {
+//
+// QueryRow uses context.Background internally; to specify the context, use
+// QueryRowContext.
+func (db *DB) QueryRow(query string, data interface{}) *Row {
 	return db.QueryRowContext(context.Background(), query, data)
 }
 
