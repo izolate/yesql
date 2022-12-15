@@ -134,7 +134,7 @@ func value(data interface{}, name string) interface{} {
 }
 
 // argfmt converts a named arg to the correct syntax for the driver.
-// e.g. :foo => $1 (postgres)
+// e.g. @Foo => $1 (postgres)
 func argfmt(driver string, nv driver.NamedValue) string {
 	switch driver {
 	// TODO: support more sql engines
