@@ -1,6 +1,14 @@
 # yesql
 
-A tool to write SQL in Go more effectively. WIP.
+A tool to write raw SQL in Go more effectively. WIP.
+
+Consider it a thin client over, or a drop-in replacement for, the standard library package `database/sql`.
+
+### Features
+* Same API as the standard library
+* Named arguments support
+* Templates for query building
+* Query logs (TODO)
 
 ## Quick start
 
@@ -30,9 +38,9 @@ type Book struct {
     Author string
 }
 
-func InsertBook(c context.Context, b Book) error {
+func InsertBook(ctx context.Context, b Book) error {
     q := `INSERT INTO users (id, title, author) VALUES (@ID, @Title, @Author)`
-    _, err := db.ExecContext(c, q, b)
+    _, err := db.ExecContext(ctx, q, b)
     return err
 }
 ```
@@ -55,8 +63,8 @@ WHERE author = @Author
 {{if .Genre}}AND genre = @Genre{{end}}
 `
 
-func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
-    rows, err := db.QueryContext(c, sqlSearchBooks, s)
+func SearchBooks(ctx context.Context, s BookSearch) ([]Book, error) {
+    rows, err := db.QueryContext(ctx, sqlSearchBooks, s)
     if err != nil {
         return nil, err
     }
@@ -75,8 +83,14 @@ func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
 In fact, positional scanning is inflexible. Let's scan into a struct instead using `db` struct tags and `rows.ScanStruct()`:
 
 ```go
-func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
-    rows, err := db.QueryContext(c, sqlSearchBooks, s)
+type Book struct {
+    ID     string `db:"id"`
+    Title  string `db:"title"`
+    Author string `db:"author"`
+}
+
+func SearchBooks(ctx context.Context, s BookSearch) ([]Book, error) {
+    rows, err := db.QueryContext(ctx, sqlSearchBooks, s)
     if err != nil {
         return nil, err
     }
@@ -102,7 +116,7 @@ func SearchBooks(c context.Context, s BookSearch) ([]Book, error) {
 - [ ] Unicode support
 - [x] Postgres support
 
-## Todo
+## TODO
 
 - [x] Exec/ExecContext
 - [x] Query/QueryContext
