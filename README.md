@@ -21,7 +21,10 @@ Open a connection to a database:
 ```go
 package foo
 
-import "github.com/izolate/yesql"
+import (
+    "github.com/izolate/yesql"
+    _ "github.com/lib/pq"
+)
 
 func main() {
     db, err := yesql.Open("postgres", "host=localhost user=foo sslmode=disable")
