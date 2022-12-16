@@ -10,6 +10,10 @@ Consider it a thin client over, or a drop-in replacement for, the standard libra
 * Templates for query building (cached, thread safe)
 * Query logs (TODO)
 
+### The Elevator Pitch™
+
+> Imagine if `database/sql` and `text/templates` had a baby.
+
 ## Quick start
 
 Open a connection to a database:
