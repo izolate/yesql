@@ -183,7 +183,7 @@ func TestQueryRow(t *testing.T) {
 			},
 			{
 				"SELECT * FROM books WHERE author = @AuthorID",
-				struct{ AuthorID int }{6},
+				&struct{ AuthorID int }{6},
 				"Dune",
 			},
 		}
