@@ -5,7 +5,7 @@ A tool to write raw SQL in Go more effectively. WIP.
 Consider it a thin client over, or a drop-in replacement for, the standard library package `database/sql`.
 
 ### Features
-* Same API as the standard library
+* Leans on standard lib, keeping the same API
 * Named arguments support
 * Templates for query building (cached, thread safe)
 * Query logs (TODO)
