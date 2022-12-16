@@ -7,7 +7,7 @@ Consider it a thin client over, or a drop-in replacement for, the standard libra
 ### Features
 * Same API as the standard library
 * Named arguments support
-* Templates for query building
+* Templates for query building (cached, thread safe)
 * Query logs (TODO)
 
 ## Quick start
