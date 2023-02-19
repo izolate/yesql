@@ -140,6 +140,8 @@ func argfmt(driver string, nv driver.NamedValue) string {
 	// TODO: support more sql engines
 	case "postgres":
 		return fmt.Sprintf("$%d", nv.Ordinal)
+	case "mssql", "sqlserver":
+		return fmt.Sprintf("@%s", nv.Name)
 	default:
 		return "?"
 	}
