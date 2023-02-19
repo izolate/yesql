@@ -39,11 +39,11 @@ func main() {
 }
 ```
 
-### `Exec`
+### `Exec` / `ExecContext`
 
-You can use the `Exec` or `ExecContext` function to execute a query without
-returning data. Named parameters (`@Foo`) allow you to bind arguments to map
-(or struct) fields without the risk of SQL injection.
+You can use the `Exec` function to execute a query without returning data. Named
+parameters (`@Foo`) allow you to bind arguments to map (or struct) fields
+without the risk of SQL injection.
 
 ```go
 type Book struct {
@@ -52,18 +52,17 @@ type Book struct {
     Author string
 }
 
-func InsertBook(ctx context.Context, b Book) error {
+func InsertBook(b Book) error {
     q := `INSERT INTO users (id, title, author) VALUES (@ID, @Title, @Author)`
-    _, err := db.ExecContext(ctx, q, b)
+    _, err := db.Exec(q, b)
     return err
 }
 ```
 
-### `Query`
+### `Query` / `QueryContext`
 
-Use `Query` or `QueryContext` to execute a query and return data. Templates
-allow you to perform complex logic without string concatenation or query
-building.
+Use `Query` to execute a query and return data. Templates allow you to perform
+complex logic without string concatenation or query building.
 
 ```go
 type BookSearch struct {
@@ -79,8 +78,8 @@ WHERE author = @Author
 {{if .Genre}}AND genre = @Genre{{end}}
 `
 
-func SearchBooks(ctx context.Context, s BookSearch) ([]Book, error) {
-    rows, err := db.QueryContext(ctx, sqlSearchBooks, s)
+func SearchBooks(s BookSearch) ([]Book, error) {
+    rows, err := db.Query(sqlSearchBooks, s)
     if err != nil {
         return nil, err
     }
@@ -106,8 +105,8 @@ type Book struct {
     Author string `db:"author"`
 }
 
-func SearchBooks(ctx context.Context, s BookSearch) ([]Book, error) {
-    rows, err := db.QueryContext(ctx, sqlSearchBooks, s)
+func SearchBooks(s BookSearch) ([]Book, error) {
+    rows, err := db.Query(sqlSearchBooks, s)
     if err != nil {
         return nil, err
     }
