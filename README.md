@@ -1,22 +1,27 @@
 # yesql
 
-A tool to write raw SQL in Go more effectively. WIP.
+yesql is a Go library that adds convenience features to the standard library
+package `database/sql`. It's specifically designed for writing raw SQL queries,
+with a focus on providing greater efficiency and ease-of-use.
 
-Consider it a thin client over, or a drop-in replacement for, the standard library package `database/sql`.
+yesql leans on the standard library, keeping the same API, making it an ideal
+drop-in replacement for `database/sql`.
 
-### Features
-* Leans on standard lib, keeping the same API
-* Named arguments support
-* Templates for query building (cached, thread safe)
-* Query logs (TODO)
+It's a WIP and currently provides the following features:
+
+* Named arguments (e.g. `SELECT * FROM foo WHERE id = @ID`)
+* Templates for query building (cached and thread-safe)
+* Statement logging
+* Same API as `database/sql`
 
 ### The Elevator Pitch™
 
-> Imagine if `database/sql` and `text/templates` had a baby.
+> yesql is like a child born from the union of `database/sql` and
+> `text/templates`.
 
 ## Quick start
 
-Open a connection to a database:
+Start by opening a connection to a database and initializing a database driver:
 
 ```go
 package foo
@@ -36,7 +41,9 @@ func main() {
 
 ### `Exec`
 
-Use `Exec` or `ExecContext` to execute a query without returning data. Named parameters (`@Foo`) allow you to bind arguments to map (or struct) fields without the risk of SQLi:
+You can use the `Exec` or `ExecContext` function to execute a query without
+returning data. Named parameters (`@Foo`) allow you to bind arguments to map
+(or struct) fields without the risk of SQL injection.
 
 ```go
 type Book struct {
@@ -54,7 +61,9 @@ func InsertBook(ctx context.Context, b Book) error {
 
 ### `Query`
 
-Use `Query` or `QueryContext` to execute a query to return data. Templates offer you the chance to perform complex logic without string concatenation or query building:
+Use `Query` or `QueryContext` to execute a query and return data. Templates
+allow you to perform complex logic without string concatenation or query
+building.
 
 ```go
 type BookSearch struct {
@@ -87,7 +96,8 @@ func SearchBooks(ctx context.Context, s BookSearch) ([]Book, error) {
 }
 ```
 
-In fact, positional scanning is inflexible. Let's scan into a struct instead using `db` struct tags and `rows.ScanStruct()`:
+Positional scanning is inflexible. Instead, use `db` struct tags and
+`rows.ScanStruct()` to scan into a struct:
 
 ```go
 type Book struct {
