@@ -118,12 +118,14 @@ func TestQuery(t *testing.T) {
 	t.Run("ScanStruct", func(t *testing.T) {
 		its := assert{t}
 		type entity struct {
+			ID     int    `db:"id"`
 			Book   string `db:"book"`
 			Author string `db:"author"`
 			Genre  string `db:"genre"`
 		}
 		q := `
 		SELECT
+			b.id AS id,
 			b.title AS book,
 			a.name AS author,
 			g.name AS genre
@@ -140,20 +142,24 @@ func TestQuery(t *testing.T) {
 		}
 		its.IntEq(9, len(es))
 		expected := []entity{
-			{Book: "A Storm Of Swords", Author: "George R.R. Martin", Genre: "Fantasy"},
-			{Book: "Alice's Adventures In Wonderland", Author: "Lewis Carroll", Genre: "Fantasy"},
-			{Book: "The Fellowship Of The Ring", Author: "J.R.R. Tolkien", Genre: "Fantasy"},
-			{Book: "Salem's Lot", Author: "Stephen King", Genre: "Horror"},
-			{Book: "It", Author: "Stephen King", Genre: "Horror"},
-			{Book: "The Shining", Author: "Stephen King", Genre: "Horror"},
-			{Book: "The Hitchhiker's Guide to the Galaxy", Author: "Douglas Adams", Genre: "Sci-Fi"},
-			{Book: "Dune", Author: "Frank Herbert", Genre: "Sci-Fi"},
-			{Book: "1984", Author: "George Orwell", Genre: "Sci-Fi"},
+			{ID: 1, Book: "A Storm Of Swords", Author: "George R.R. Martin", Genre: "Fantasy"},
+			{ID: 2, Book: "Alice's Adventures In Wonderland", Author: "Lewis Carroll", Genre: "Fantasy"},
+			{ID: 3, Book: "The Fellowship Of The Ring", Author: "J.R.R. Tolkien", Genre: "Fantasy"},
+			{ID: 4, Book: "Salem's Lot", Author: "Stephen King", Genre: "Horror"},
+			{ID: 5, Book: "It", Author: "Stephen King", Genre: "Horror"},
+			{ID: 6, Book: "The Shining", Author: "Stephen King", Genre: "Horror"},
+			{ID: 7, Book: "The Hitchhiker's Guide to the Galaxy", Author: "Douglas Adams", Genre: "Sci-Fi"},
+			{ID: 8, Book: "Dune", Author: "Frank Herbert", Genre: "Sci-Fi"},
+			{ID: 9, Book: "1984", Author: "George Orwell", Genre: "Sci-Fi"},
 		}
 		for i, e := range es {
-			its.StringEq(expected[i].Book, e.Book)
-			its.StringEq(expected[i].Author, e.Author)
-			its.StringEq(expected[i].Genre, e.Genre)
+			t.Run(e.Book, func(t *testing.T) {
+				its = assert{t}
+				its.IntEq(expected[i].ID, e.ID)
+				its.StringEq(expected[i].Book, e.Book)
+				its.StringEq(expected[i].Author, e.Author)
+				its.StringEq(expected[i].Genre, e.Genre)
+			})
 		}
 	})
 }
