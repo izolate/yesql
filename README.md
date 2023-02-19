@@ -64,6 +64,8 @@ func InsertBook(b Book) error {
 Use `Query` to execute a query and return data. Templates allow you to perform
 complex logic without string concatenation or query building.
 
+The templates alter the final SQL statement based on the input provided.
+
 ```go
 type BookSearch struct {
     Author string    
