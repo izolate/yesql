@@ -17,7 +17,7 @@ type Parser interface {
 	// the engine, e.g. :foo, :bar => $1, $2 (postgres).
 	//
 	// Additionally, the positional args are returned in order.
-	Parse(query string, data interface{}) (q string, args []interface{}, err error)
+	Parse(query string, data any) (q string, args []any, err error)
 }
 
 // New creates a new parser.
@@ -29,13 +29,13 @@ type parser struct {
 	driver string
 }
 
-func (p parser) Parse(query string, data interface{}) (string, []interface{}, error) {
+func (p parser) Parse(query string, data any) (string, []any, error) {
 	// Convert to rune to handle unicode strings
 	qt := []rune(query)
 
 	// Parse named args
 	q, nvs := parse(p.driver, qt)
-	args := []interface{}{}
+	args := []any{}
 	for _, nv := range nvs {
 		// Get the named arg values from data
 		v := value(data, nv.Name)
@@ -105,8 +105,8 @@ func parse(driverName string, query []rune) (s []rune, args []driver.NamedValue)
 }
 
 // value gets the value for field (name) in the data object.
-func value(data interface{}, name string) interface{} {
-	if m, ok := data.(map[string]interface{}); ok {
+func value(data any, name string) any {
+	if m, ok := data.(map[string]any); ok {
 		if v, ok := m[name]; ok {
 			return v
 		}

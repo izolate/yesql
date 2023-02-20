@@ -5,7 +5,7 @@ import "testing"
 func TestExecTemplate(t *testing.T) {
 	tcs := []struct {
 		input  string
-		data   interface{}
+		data   any
 		output string
 	}{
 		{

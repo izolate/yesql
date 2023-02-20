@@ -14,7 +14,7 @@ var m = &sync.Map{}
 type Executer interface {
 	// Execute parses and executes a string template against the specified
 	// data object, returning the output string.
-	Execute(template string, data interface{}) (string, error)
+	Execute(template string, data any) (string, error)
 }
 
 // New returns a new template execer to execute templates.
@@ -26,7 +26,7 @@ type store struct {
 	m *sync.Map
 }
 
-func (s store) Execute(text string, data interface{}) (string, error) {
+func (s store) Execute(text string, data any) (string, error) {
 	// generate unique hash for template string
 	h := hash(text)
 
@@ -69,7 +69,7 @@ func parse(hash, text string) (*template.Template, error) {
 	return t, nil
 }
 
-func execute(t *template.Template, data interface{}) (string, error) {
+func execute(t *template.Template, data any) (string, error) {
 	var b bytes.Buffer
 	if err := t.Execute(&b, data); err != nil {
 		return "", err

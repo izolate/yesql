@@ -8,12 +8,12 @@ import (
 )
 
 type Execer interface {
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 }
 
 type Queryer interface {
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
 }
 
 // ExecerQueryer is a union interface comprising Execer and Queryer.
@@ -72,8 +72,8 @@ func Open(driver, dsn string, opts ...func(*Config)) (*DB, error) {
 
 // MustOpen opens a database specified by its database driver name and a
 // driver-specific data source name, and panics on any errors.
-func MustOpen(driver, dsn string) *DB {
-	db, err := Open(driver, dsn)
+func MustOpen(driver, dsn string, opts ...func(*Config)) *DB {
+	db, err := Open(driver, dsn, opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +86,7 @@ func ExecContext(
 	db Execer,
 	ctx context.Context,
 	query string,
-	data interface{},
+	data any,
 	cfg *Config,
 ) (sql.Result, error) {
 	qt, err := cfg.tpl.Execute(query, data)
@@ -97,6 +97,7 @@ func ExecContext(
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
+	logStatement(cfg.quiet, q, args)
 	return db.ExecContext(ctx, q, args...)
 }
 
@@ -106,7 +107,7 @@ func QueryContext(
 	db Queryer,
 	ctx context.Context,
 	query string,
-	data interface{},
+	data any,
 	cfg *Config,
 ) (*Rows, error) {
 	qt, err := cfg.tpl.Execute(query, data)
@@ -117,6 +118,7 @@ func QueryContext(
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
+	logStatement(cfg.quiet, q, args)
 	rows, err := db.QueryContext(ctx, q, args...)
 	return &Rows{rows}, err
 }
@@ -131,7 +133,7 @@ func QueryRowContext(
 	db Queryer,
 	ctx context.Context,
 	query string,
-	data interface{},
+	data any,
 	cfg *Config,
 ) *Row {
 	rows, err := QueryContext(db, ctx, query, data, cfg)

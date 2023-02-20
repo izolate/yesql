@@ -79,7 +79,7 @@ func mustExec(q string) {
 }
 
 func TestMain(m *testing.M) {
-	db = MustOpen("postgres", "host=localhost user=postgres password=postgres database=postgres sslmode=disable")
+	db = MustOpen("postgres", "host=localhost user=postgres password=postgres database=postgres sslmode=disable", OptQuiet())
 	mustExec(sqlDown)
 	mustExec(sqlUp)
 	os.Exit(m.Run())

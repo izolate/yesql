@@ -8,11 +8,11 @@ import (
 func TestParse(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		tcs := []struct {
-			driver string        // DB driver
-			qt     string        // query template
-			data   interface{}   // data object for args
-			q      string        // returned query
-			args   []interface{} // positional arg values
+			driver string // DB driver
+			qt     string // query template
+			data   any    // data object for args
+			q      string // returned query
+			args   []any  // positional arg values
 		}{
 			{
 				driver: "postgres",
@@ -22,7 +22,7 @@ func TestParse(t *testing.T) {
 					Age  int
 				}{Name: "Foo", Age: 10},
 				q:    "SELECT * FROM a WHERE name = $1 AND age > $2 LIMIT 5",
-				args: []interface{}{"Foo", 10},
+				args: []any{"Foo", 10},
 			},
 			{
 				driver: "postgres",
@@ -32,7 +32,7 @@ func TestParse(t *testing.T) {
 					Limit int
 				}{Name: "Foo", Limit: 100},
 				q:    "SELECT * FROM users WHERE name = $1 AND username LIKE '@foo%' LIMIT $2 OFFSET 5",
-				args: []interface{}{"Foo", 100},
+				args: []any{"Foo", 100},
 			},
 			{
 				driver: "postgres",
@@ -42,7 +42,7 @@ func TestParse(t *testing.T) {
 					Limit int
 				}{Type: "Foo", Limit: 100},
 				q:    `SELECT * FROM docs WHERE type = $1 AND dump = '{"text":"''@ignore @at @signs@@@''"}' LIMIT $2`,
-				args: []interface{}{"Foo", 100},
+				args: []any{"Foo", 100},
 			},
 			{
 				driver: "postgres",
@@ -53,25 +53,25 @@ func TestParse(t *testing.T) {
 					Limit  int
 				}{Locale: "JP", J文: "すみません", Limit: 3},
 				q:    "SELECT * FROM strings WHERE locale = $1 AND text ILIKE $2 LIMIT $3",
-				args: []interface{}{"JP", "すみません", 3},
+				args: []any{"JP", "すみません", 3},
 			},
 			{
 				driver: "postgres",
 				qt:     "SELECT created_at::timestamp(0) WHERE created_at > @date",
-				data: map[string]interface{}{
+				data: map[string]any{
 					"date": time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC),
 				},
 				q:    "SELECT created_at::timestamp(0) WHERE created_at > $1",
-				args: []interface{}{time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
+				args: []any{time.Date(2020, 03, 10, 0, 0, 0, 0, time.UTC)},
 			},
 			{
 				driver: "postgres",
 				qt:     "INSERT INTO authors (name) VALUES (@Name)",
-				data: map[string]interface{}{
+				data: map[string]any{
 					"Name": "Max",
 				},
 				q:    "INSERT INTO authors (name) VALUES ($1)",
-				args: []interface{}{"Max"},
+				args: []any{"Max"},
 			},
 		}
 		for _, tc := range tcs {
