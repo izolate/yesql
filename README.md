@@ -126,6 +126,16 @@ func SearchBooks(s BookSearch) ([]Book, error) {
 }
 ```
 
+## Configuration
+
+All entrypoints accept a list of functional config setters that allow you to
+configure yesql. For example, to turn off statement logging, pass in the
+`OptQuiet` setter:
+
+```go
+db, err := yesql.Open("postgres", "host=localhost user=foo sslmode=disable", yesql.OptQuiet())
+```
+
 ## Feature checklist
 
 - [x] Templated SQL statements
