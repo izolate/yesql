@@ -5,9 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-
-	"github.com/izolate/yesql/bindvar"
-	"github.com/izolate/yesql/template"
 )
 
 type Execer interface {
@@ -26,15 +23,18 @@ type ExecerQueryer interface {
 }
 
 // New instantiates yesql with an existing database connection.
-func New(db *sql.DB) (*DB, error) {
+func New(db *sql.DB, opts ...func(*Config)) (*DB, error) {
 	drivers := sql.Drivers()
 	if len(drivers) == 0 {
 		return nil, errors.New("yesql: no sql driver found")
 	}
+
+	// ensure the driver is the first option sent to config.
+	co := append(make([]func(*Config), 0, len(opts)+1), OptDriver(drivers[0]))
+
 	return &DB{
-		DB:   db,
-		tpl:  template.New(),
-		bvar: bindvar.New(drivers[0]),
+		DB:  db,
+		cfg: NewConfig(append(co, opts...)...),
 	}, nil
 }
 
@@ -55,15 +55,18 @@ func New(db *sql.DB) (*DB, error) {
 // and maintains its own pool of idle connections. Thus, the Open
 // function should be called just once. It is rarely necessary to
 // close a DB.
-func Open(driver, dsn string) (*DB, error) {
+func Open(driver, dsn string, opts ...func(*Config)) (*DB, error) {
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, err
 	}
+
+	// ensure the driver is the first option sent to config.
+	co := append(make([]func(*Config), 0, len(opts)+1), OptDriver(driver))
+
 	return &DB{
-		DB:   db,
-		tpl:  template.New(),
-		bvar: bindvar.New(driver),
+		DB:  db,
+		cfg: NewConfig(append(co, opts...)...),
 	}, nil
 }
 
@@ -84,14 +87,13 @@ func ExecContext(
 	ctx context.Context,
 	query string,
 	data interface{},
-	tpl template.Executer,
-	bvar bindvar.Parser,
+	cfg *Config,
 ) (sql.Result, error) {
-	qt, err := tpl.Execute(query, data)
+	qt, err := cfg.tpl.Execute(query, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	q, args, err := bvar.Parse(qt, data)
+	q, args, err := cfg.bvar.Parse(qt, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
@@ -105,14 +107,13 @@ func QueryContext(
 	ctx context.Context,
 	query string,
 	data interface{},
-	tpl template.Executer,
-	bvar bindvar.Parser,
+	cfg *Config,
 ) (*Rows, error) {
-	qt, err := tpl.Execute(query, data)
+	qt, err := cfg.tpl.Execute(query, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	q, args, err := bvar.Parse(qt, data)
+	q, args, err := cfg.bvar.Parse(qt, data)
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
@@ -131,9 +132,8 @@ func QueryRowContext(
 	ctx context.Context,
 	query string,
 	data interface{},
-	tpl template.Executer,
-	bvar bindvar.Parser,
+	cfg *Config,
 ) *Row {
-	rows, err := QueryContext(db, ctx, query, data, tpl, bvar)
+	rows, err := QueryContext(db, ctx, query, data, cfg)
 	return &Row{rows: rows, err: err}
 }

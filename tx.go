@@ -3,9 +3,6 @@ package yesql
 import (
 	"context"
 	"database/sql"
-
-	"github.com/izolate/yesql/bindvar"
-	"github.com/izolate/yesql/template"
 )
 
 // Tx is an in-progress database transaction.
@@ -20,14 +17,13 @@ import (
 // by the call to Commit or Rollback.
 type Tx struct {
 	*sql.Tx
-	tpl  template.Executer
-	bvar bindvar.Parser
+	cfg *Config
 }
 
 // ExecContext executes a query that doesn't return rows.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (tx *Tx) ExecContext(ctx context.Context, query string, data interface{}) (sql.Result, error) {
-	return ExecContext(tx.Tx, ctx, query, data, tx.tpl, tx.bvar)
+	return ExecContext(tx.Tx, ctx, query, data, tx.cfg)
 }
 
 // Exec executes a query without returning any rows.
@@ -39,7 +35,7 @@ func (tx *Tx) Exec(query string, data interface{}) (sql.Result, error) {
 // QueryContext executes a query that returns rows, typically a SELECT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (tx *Tx) QueryContext(ctx context.Context, query string, data interface{}) (*Rows, error) {
-	return QueryContext(tx.Tx, ctx, query, data, tx.tpl, tx.bvar)
+	return QueryContext(tx.Tx, ctx, query, data, tx.cfg)
 }
 
 // Query executes a query that returns rows, typically a SELECT.

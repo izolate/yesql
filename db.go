@@ -3,21 +3,17 @@ package yesql
 import (
 	"context"
 	"database/sql"
-
-	"github.com/izolate/yesql/bindvar"
-	"github.com/izolate/yesql/template"
 )
 
 type DB struct {
 	*sql.DB
-	tpl  template.Executer
-	bvar bindvar.Parser
+	cfg *Config
 }
 
 // ExecContext executes a query without returning any rows, e.g. an INSERT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) ExecContext(ctx context.Context, query string, data interface{}) (sql.Result, error) {
-	return ExecContext(db.DB, ctx, query, data, db.tpl, db.bvar)
+	return ExecContext(db.DB, ctx, query, data, db.cfg)
 }
 
 // Exec executes a query without returning any rows, e.g. an INSERT.
@@ -29,7 +25,7 @@ func (db *DB) Exec(query string, data interface{}) (sql.Result, error) {
 // QueryContext executes a query that returns rows, typically a SELECT.
 // The data object is a map/struct for any placeholder parameters in the query.
 func (db *DB) QueryContext(ctx context.Context, query string, data interface{}) (*Rows, error) {
-	return QueryContext(db.DB, ctx, query, data, db.tpl, db.bvar)
+	return QueryContext(db.DB, ctx, query, data, db.cfg)
 }
 
 // Query executes a query that returns rows, typically a SELECT.
@@ -45,7 +41,7 @@ func (db *DB) Query(query string, data interface{}) (*Rows, error) {
 // Otherwise, the *Row's Scan scans the first selected row and discards
 // the rest.
 func (db *DB) QueryRowContext(ctx context.Context, query string, data interface{}) *Row {
-	return QueryRowContext(db.DB, ctx, query, data, db.tpl, db.bvar)
+	return QueryRowContext(db.DB, ctx, query, data, db.cfg)
 }
 
 // QueryRow executes a query that is expected to return at most one row.
@@ -76,11 +72,7 @@ func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Tx{
-		Tx:   tx,
-		tpl:  db.tpl,
-		bvar: db.bvar,
-	}, nil
+	return &Tx{tx, db.cfg}, nil
 }
 
 // Begin starts a transaction. The default isolation level is dependent on

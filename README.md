@@ -133,10 +133,11 @@ func SearchBooks(s BookSearch) ([]Book, error) {
 - [x] Struct scanning
 - [ ] Unicode support
 - [x] Postgres support
+- [ ] Prepared statements
 
 ## TODO
 
 - [x] Exec/ExecContext
 - [x] Query/QueryContext
 - [x] QueryRow/QueryRowContext
-- [ ] ScanSlice/ScanMap
+- [ ] ScanSlice/ScanMap (maybe)

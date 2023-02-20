@@ -36,11 +36,6 @@ DROP TABLE IF EXISTS genres;`
 
 var db *DB
 
-type genre struct {
-	ID   int    `db:"id"`
-	Name string `db:"name"`
-}
-
 type author struct {
 	ID   int    `db:"id"`
 	Name string `db:"name"`
