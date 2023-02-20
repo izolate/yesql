@@ -130,10 +130,10 @@ func SearchBooks(s BookSearch) ([]Book, error) {
 
 - [x] Templated SQL statements
 - [x] Named arguments (bindvars)
-- [ ] Statement logging
+- [x] Statement logging
 - [ ] Query tracing
 - [x] Struct scanning
-- [ ] Unicode support
+- [x] Unicode support
 - [x] Postgres support
 - [ ] Prepared statements
 

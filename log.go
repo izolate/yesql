@@ -35,7 +35,6 @@ func inline(s string) (t string) {
 
 			case c == '\n', c == '\t':
 				continue
-				// t += string(' ')
 			}
 		}
 		t += string(c)

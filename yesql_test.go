@@ -2,6 +2,7 @@ package yesql
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -245,4 +246,21 @@ func TestQueryRow(t *testing.T) {
 			its.StringEq(tc.title, title)
 		}
 	})
+}
+
+func TestUnicode(t *testing.T) {
+	testCases := []string{
+		"😂😂😂😂😂",
+		"The 👏  future 👏  of 👏  online 👏  conversation 👏  is 👏  a 👏  hand 👏  emoji 👏  clapping 👏  in 👏  your 👏  face 👏  forever.",
+		"こんにちは世界",
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			its := assert{t}
+			var s string
+			err := db.QueryRow(fmt.Sprintf("SELECT '%s'", tc), nil).Scan(&s)
+			its.NilErr(err)
+			its.StringEq(tc, s)
+		})
+	}
 }
