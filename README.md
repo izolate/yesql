@@ -59,6 +59,8 @@ func InsertBook(b Book) error {
 }
 ```
 
+> :frog: NOTE: Named parameters only work with exported fields.
+
 ### `Query` / `QueryContext`
 
 Use `Query` to execute a query and return data. Templates allow you to perform
