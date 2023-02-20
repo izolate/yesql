@@ -118,16 +118,22 @@ func value(data interface{}, name string) interface{} {
 	switch {
 	case v.Kind() == reflect.Struct: // Struct
 		if f := v.FieldByName(name); f.IsValid() {
-			return f.Interface()
+			if f.CanInterface() {
+				return f.Interface()
+			}
 		}
 	case v.Elem().Kind() == reflect.Struct: // Pointer struct
 		el := v.Elem()
 		if f := el.FieldByName(name); f.IsValid() {
-			return f.Interface()
+			if f.CanInterface() {
+				return f.Interface()
+			}
 		}
 	case v.Elem().Kind() == reflect.Map: // Map pointer
 		if val := v.Elem().MapIndex(reflect.ValueOf(name)); !val.IsZero() {
-			return val.Interface()
+			if val.CanInterface() {
+				return val.Interface()
+			}
 		}
 	}
 	return nil
