@@ -1,6 +1,6 @@
 # yesql
 
-yesql is a Go library that adds convenience features to the standard library
+yesql is a lightweight Go library that adds convenience features to the standard library
 package `database/sql`. It's specifically designed for writing raw SQL queries,
 with a focus on providing greater efficiency and ease-of-use.
 
