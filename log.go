@@ -1,43 +1,53 @@
 package yesql
 
 import (
-	"log"
+	"context"
+	"log/slog"
+	"strings"
+	"unicode"
 )
 
-// a stop-gap measure until structured logging is added to the std lib.
-// see: https://go.googlesource.com/proposal/+/master/design/56345-structured-logging.md
-func logStatement(quiet bool, stmt string, args []any) {
-	if quiet {
+func (c *Config) logSQL(ctx context.Context, query string) {
+	if c.quiet {
 		return
 	}
-	log.SetFlags(log.LstdFlags)
-	log.Println(inline(stmt))
+	slog.InfoContext(
+		ctx,
+		"executing SQL statement",
+		slog.String("query", inline(query)),
+	)
 }
 
-func inline(s string) (t string) {
-	var ignore bool
-	for i, c := range s {
-		// Ignore characters inside sql string literals.
-		if string(c) == "'" {
-			ignore = !ignore
-		}
-		first := i == 0
-		if !ignore {
-			switch {
-			case !first && c == ' ' && t[len(t)-1] == ' ':
-				// remove duplicate space
-				continue
+// inline collapses whitespace outside single-quoted SQL string literals.
+// It is intended only for readable logs, not as a complete SQL parser;
+// dialect-specific quoting and SQL comments receive no special handling.
+func inline(query string) string {
+	var b strings.Builder
+	var quoted, space bool
 
-			case !first && c == '\n' && t[len(t)-1] != ' ':
-				// convert the first newline to a space
-				t += string(' ')
-				continue
-
-			case c == '\n', c == '\t':
-				continue
+	for _, r := range query {
+		// Preserve string literals exactly, including their whitespace.
+		if r == '\'' {
+			if space && b.Len() > 0 {
+				b.WriteByte(' ')
 			}
+			space = false
+			quoted = !quoted
+			b.WriteRune(r)
+			continue
 		}
-		t += string(c)
+		// Defer whitespace until the next token. This collapses runs and
+		// drops whitespace at the beginning and end of the query.
+		if !quoted && unicode.IsSpace(r) {
+			space = b.Len() > 0
+			continue
+		}
+		if space {
+			b.WriteByte(' ')
+			space = false
+		}
+		b.WriteRune(r)
 	}
-	return t
+
+	return b.String()
 }
