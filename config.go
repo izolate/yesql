@@ -51,11 +51,11 @@ func OptBindvar(p bindvar.Parser) func(c *Config) {
 
 // OptQuiet disables logging.
 func OptQuiet() func(c *Config) {
-	return QuietIf(true)
+	return OptQuietIf(true)
 }
 
-// QuietIf disables logging when cond is true and enables it when cond is false.
-func QuietIf(cond bool) func(c *Config) {
+// OptQuietIf disables logging when cond is true and enables it when cond is false.
+func OptQuietIf(cond bool) func(c *Config) {
 	return func(c *Config) {
 		c.quiet = cond
 	}

@@ -2,7 +2,7 @@ package yesql
 
 import "testing"
 
-func TestQuietIf(t *testing.T) {
+func TestOptQuietIf(t *testing.T) {
 	testCases := []struct {
 		name string
 		opts []func(*Config)
@@ -10,22 +10,22 @@ func TestQuietIf(t *testing.T) {
 	}{
 		{
 			name: "TrueDisablesLogging",
-			opts: []func(*Config){QuietIf(true)},
+			opts: []func(*Config){OptQuietIf(true)},
 			want: true,
 		},
 		{
 			name: "FalseEnablesLogging",
-			opts: []func(*Config){QuietIf(false)},
+			opts: []func(*Config){OptQuietIf(false)},
 			want: false,
 		},
 		{
 			name: "FalseOverridesOptQuiet",
-			opts: []func(*Config){OptQuiet(), QuietIf(false)},
+			opts: []func(*Config){OptQuiet(), OptQuietIf(false)},
 			want: false,
 		},
 		{
 			name: "OptQuietOverridesFalse",
-			opts: []func(*Config){QuietIf(false), OptQuiet()},
+			opts: []func(*Config){OptQuietIf(false), OptQuiet()},
 			want: true,
 		},
 	}
