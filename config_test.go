@@ -9,22 +9,22 @@ func TestQuietIf(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "true disables logging",
+			name: "TrueDisablesLogging",
 			opts: []func(*Config){QuietIf(true)},
 			want: true,
 		},
 		{
-			name: "false enables logging",
+			name: "FalseEnablesLogging",
 			opts: []func(*Config){QuietIf(false)},
 			want: false,
 		},
 		{
-			name: "false overrides OptQuiet",
+			name: "FalseOverridesOptQuiet",
 			opts: []func(*Config){OptQuiet(), QuietIf(false)},
 			want: false,
 		},
 		{
-			name: "OptQuiet overrides false",
+			name: "OptQuietOverridesFalse",
 			opts: []func(*Config){QuietIf(false), OptQuiet()},
 			want: true,
 		},
