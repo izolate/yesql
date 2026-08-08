@@ -87,7 +87,7 @@ db, err := yesql.Open(
 )
 ```
 
-Use `QuietIf(!debugSQL)` when the setting is conditional. Passing `false`
+Use `OptQuietIf(!debugSQL)` when the setting is conditional. Passing `false`
 explicitly enables logging, so the last logging option wins.
 
 ## Status
