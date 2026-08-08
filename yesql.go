@@ -97,7 +97,7 @@ func ExecContext(
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	logStatement(cfg.quiet, q, args)
+	logStatement(ctx, cfg.quiet, q, args)
 	return db.ExecContext(ctx, q, args...)
 }
 
@@ -118,7 +118,7 @@ func QueryContext(
 	if err != nil {
 		return nil, fmt.Errorf("yesql: %s", err)
 	}
-	logStatement(cfg.quiet, q, args)
+	logStatement(ctx, cfg.quiet, q, args)
 	rows, err := db.QueryContext(ctx, q, args...)
 	return &Rows{rows}, err
 }

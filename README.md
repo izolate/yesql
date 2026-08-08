@@ -3,7 +3,7 @@
 **Write SQL. Skip the plumbing.**
 
 yesql is a lightweight layer over Go's `database/sql` for writing raw SQL with
-named parameters, cached templates, statement logging, and struct scanning.
+named parameters, cached templates, structured logging, and struct scanning.
 
 > `database/sql` meets `text/template`—with less query plumbing.
 
@@ -95,7 +95,7 @@ Available today:
 
 - Templated SQL statements
 - Named parameters
-- Statement logging
+- Structured statement logging
 - Struct scanning
 - Unicode support
 - PostgreSQL support
