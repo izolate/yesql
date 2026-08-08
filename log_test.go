@@ -38,7 +38,7 @@ func TestLogSQL(t *testing.T) {
 	}
 
 	output.Reset()
-	(&Config{quiet: true}).logSQL(context.Background(), query)
+	NewConfig(QuietIf(true)).logSQL(context.Background(), query)
 	if output.Len() != 0 {
 		t.Errorf("quiet log output = %q; want no output", output.String())
 	}
